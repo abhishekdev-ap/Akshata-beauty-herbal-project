@@ -1,14 +1,11 @@
 # 💇‍♀️ Parlor Appointment System
 
-A modern **appointment booking system** for parlors and salons.  
+A modern appointment booking system for parlors and salons.  
 This project allows customers to easily book, reschedule, and manage appointments, while providing the parlor owner with tools to manage schedules, payments, and customer interactions.
-
----
 
 ## 🏗 Project Architecture & Flow
 
 ### 📊 Project Flowchart
-```mermaid
 graph TD
     A[User Opens App] --> B{User Authenticated?}
     B -->|No| C[Login/Register Page]
@@ -139,3 +136,4 @@ Node.js – Runtime environment
 npm – Package management
 
 Environment Variables – Configurable settings# -Parlor-project-Full-stack-development-
+
