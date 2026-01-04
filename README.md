@@ -1,140 +1,109 @@
-# 💇‍♀️ Parlor Appointment System
+# 🌿 Akshata Beauty Herbal Parlour
 
-A modern appointment booking system for parlors and salons.  
-This project allows customers to easily book, reschedule, and manage appointments, while providing the parlor owner with tools to manage schedules, payments, and customer interactions.
+A modern, full-stack appointment booking system designed for **Akshata Beauty Herbal Parlour**. This application provides a seamless experience for customers to book services and for the business to manage appointments, payments, and reviews.
 
-## 🏗 Project Architecture & Flow
+**🚀 Live Demo:** [https://akshata-herbal-beauty.vercel.app](https://akshata-herbal-beauty.vercel.app)
 
-### 📊 Project Flowchart
+---
+
+## ✨ Key Features
+
+### 👤 User Experience
+*   **Seamless Booking Flow**: Easy-to-use interface for selecting services, dates, and times.
+*   **User Accounts**: Secure login, registration, and password recovery via email.
+*   **Dashboard**: Personal user dashboard to view booking history and manage profile settings.
+*   **Payment History**: sophisticated tracking of past payments with downloadable PDF receipts.
+*   **Review System**: Customers can write, edit, and view reviews with a star rating system.
+*   **Dark Mode**: Fully supported system-wide dark mode for better visual comfort.
+
+### 🛠️ Functionality & Backend
+*   **Real-time Notifications**: Integrated Email (Web3Forms) and internal notification logic for appointments.
+*   **Contact Form**: Functional "Send Us a Message" form with spam protection and email delivery.
+*   **Admin Dashboard**: Dedicated area for the business owner to view bookings, manage services, and configure business settings.
+*   **Business Settings**: Configurable options for email notifications and operational preferences.
+
+### ⚡ Performance & Optimization
+*   **Lazy Loading**: Route-based code splitting to ensure lightning-fast initial load times.
+*   **Optimized Assets**: Compressed media and efficient bundle splitting for Vercel deployment.
+*   **Responsive Design**: Mobile-first architecture ensuring perfect rendering on all devices.
+
+---
+
+## 🏗 Project Architecture
+
+### 📊 User Flow
+```mermaid
 graph TD
-    A[User Opens App] --> B{User Authenticated?}
-    B -->|No| C[Login/Register Page]
-    B -->|Yes| D[Dashboard/Booking Page]
+    A[User Visits Site] --> B{Authenticated?}
+    B -->|No| C[Login/Register]
+    B -->|Yes| D[Home/Dashboard]
     
-    C --> E[Email/Password Input]
-    E --> F[Auto-Registration if New User]
-    F --> G[Authentication Service]
-    G --> H{Login Success?}
-    H -->|No| I[Show Error Message]
-    H -->|Yes| D
+    D --> E[Book Service]
+    E --> F[Select Date & Time]
+    F --> G[Confirm Booking]
     
-    D --> J[Service Selection]
-    J --> K[Date/Time Selection]
-    K --> L[Customer Phone Input]
-    L --> M[Book Appointment Button]
+    G --> H{Payment}
+    H -->|Complete| I[Booking Confirmed]
+    I --> J[Email Notification Sent]
+    I --> K[Redirect to Review/Thank You]
     
-    M --> N[Real-time SMS to Akshata]
-    N --> O[Payment Page]
-    O --> P{Payment Method?}
-    
-    P -->|UPI| Q[UPI Payment Processing]
-    P -->|Card| R[Card Payment Processing]
-    P -->|Cash| S[Pay at Parlor Option]
-    
-    Q --> T[Payment Confirmation SMS]
-    R --> T
-    S --> U[Booking Confirmation]
-    
-    T --> V[Review Page]
-    U --> V
-    V --> W[Submit Review]
-    W --> X[Thank You Page]
-    
-    D --> Y[View Reviews]
-    Y --> Z[Customer Reviews Page]
-    Z --> AA[Write/Edit Reviews]
-    
-    D --> BB[Account Settings]
-    BB --> CC[Profile/Security/Preferences]
-    
-    D --> DD[Payment History]
-    DD --> EE[View Receipts/Download PDF]
-    
-    G --> FF[Password Reset Flow]
-    FF --> GG[Email Service]
-    GG --> HH[Reset Link Sent]
-    HH --> II[New Password Setup]
+    D --> L[My Account]
+    L --> M[Payment History]
+    L --> N[Settings]
+```
 
+---
 
-⚙️ Technology Stack
-Frontend
+## ⚙️ Technology Stack
 
-React 18.3.1 – Modern React with hooks & functional components
+*   **Frontend**: React 18, TypeScript, Vite
+*   **Styling**: Tailwind CSS, PostCSS
+*   **Icons**: Lucide React
+*   **State Management**: React Hooks & Context API
+*   **Email Services**: Web3Forms, EmailJS (Fallback)
+*   **Deployment**: Vercel
 
-TypeScript – Type-safe development
+---
 
-Vite – Fast build tool and dev server
+## 🚀 Getting Started
 
-Styling & UI
+### Prerequisites
+*   Node.js (v18 or higher)
+*   npm or yarn
 
-Tailwind CSS 3.4.1 – Utility-first CSS framework
+### Installation
 
-Lucide React – Modern icon library
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/abhishekdev-ap/Akshata-beauty-herbal-project.git
+    cd Akshata-beauty-herbal-project
+    ```
 
-Custom Animations – CSS transitions & transforms
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-Dark Mode Support – Theme switching
+3.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
 
-State Management
+### Deployment
 
-React Hooks – useState, useEffect for local state
+This project is optimized for deployment on **Vercel**.
 
-Context API – Global state management
+1.  Build the project:
+    ```bash
+    npm run build
+    ```
+2.  Deploy:
+    ```bash
+    npx vercel --prod
+    ```
 
-Local Storage – Persistent data storage
+---
 
-Services & APIs
+## 🔒 License
 
-SMS Service (multi-provider):
-
-TextLocal (Primary – Indian SMS)
-
-Twilio (Backup – International)
-
-AWS SNS (Cloud backup)
-
-Webhook fallbacks
-
-Email Service – For password reset
-
-PDF Service (jsPDF) – Receipt generation
-
-Authentication Service – User management
-
-🚀 Core Features
-
-User Authentication – Login/Register with auto-registration
-
-Service Booking – Multi-service selection with pricing
-
-Payment Processing – UPI, Card, Cash options
-
-Real-time Notifications – SMS to parlor owner
-
-Review System – Customer feedback & ratings
-
-Account Management – Profile, settings, preferences
-
-🌟 Advanced Features
-
-Dark Mode – Complete theme switching
-
-PDF Generation – Professional receipts
-
-Payment History – Transaction tracking
-
-Password Reset – Email-based recovery
-
-Responsive Design – Mobile-first approach
-
-Smooth Animations – Professional transitions
-
-🔧 Environment
-
-Node.js – Runtime environment
-
-npm – Package management
-
-Environment Variables – Configurable settings# -Parlor-project-Full-stack-development-
-
-# Akshata-beauty-herbal-project
+This project is proprietary software developed for **Akshata Beauty Herbal Parlour**. All rights reserved.
