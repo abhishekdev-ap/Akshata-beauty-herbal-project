@@ -7,6 +7,7 @@ interface PaymentPageProps {
   appointment: Appointment;
   onPaymentComplete: () => void;
   onBack?: () => void;
+  isDarkMode?: boolean;
 }
 
 const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplete, onBack }) => {
@@ -24,10 +25,10 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplet
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    
+
     // Different processing times based on payment method
     const processingTime = paymentMethod === 'cash' ? 1000 : 2000;
-    
+
     try {
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, processingTime));
@@ -58,7 +59,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplet
             appointmentId: appointment.id
           };
 
-          const paymentNotificationMessage = `💰 PAYMENT RECEIVED - AKSHATA PARLOR
+          const paymentNotificationMessage = `💰 PAYMENT RECEIVED - AKSHATA BEAUTY HERBAL PARLOUR
 
 Customer: ${userName}
 Email: ${userEmail}
@@ -73,7 +74,7 @@ Email: ${userEmail}
 
 ✅ Payment confirmed and appointment secured!
 
-- AKSHATA PARLOR System`;
+- AKSHATA BEAUTY HERBAL PARLOUR System`;
 
           await smsService.sendSMS({
             to: smsService.getAkshataNumber(),
@@ -131,7 +132,7 @@ Email: ${userEmail}
     } else if (field === 'cvv') {
       value = value.replace(/\D/g, '').substr(0, 3);
     }
-    
+
     setCardDetails(prev => ({
       ...prev,
       [field]: value
@@ -155,7 +156,7 @@ Email: ${userEmail}
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Booking</span>
               </button>
-              
+
               {/* Book New Appointment Link */}
               <div className="text-white/60">|</div>
               <button
@@ -219,253 +220,84 @@ Email: ${userEmail}
           </p>
         </div>
 
-        {/* Payment Methods */}
+        {/* Simple Payment Info */}
         <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Choose Payment Method</h3>
-          
-          <div className="space-y-4 mb-6">
-            {/* UPI Payment Option */}
-            <button
-              onClick={() => setPaymentMethod('upi')}
-              className={`w-full p-4 rounded-xl border-2 transition-all ${
-                paymentMethod === 'upi'
-                  ? 'border-pink-500 bg-pink-50'
-                  : 'border-gray-200 hover:border-pink-300'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <QrCode className="w-6 h-6 text-pink-600" />
-                <div className="text-left">
-                  <div className="font-semibold">UPI Payment</div>
-                  <div className="text-sm text-gray-600">Pay using any UPI app - Instant & Secure</div>
-                </div>
-                {paymentMethod === 'upi' && (
-                  <CheckCircle className="w-5 h-5 text-pink-600 ml-auto" />
-                )}
+          <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-8 border-2 border-pink-200">
+            <div className="text-center">
+              {/* Phone Icon */}
+              <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Phone className="w-10 h-10 text-white" />
               </div>
-            </button>
 
-            {/* Card Payment Option */}
-            <button
-              onClick={() => setPaymentMethod('card')}
-              className={`w-full p-4 rounded-xl border-2 transition-all ${
-                paymentMethod === 'card'
-                  ? 'border-pink-500 bg-pink-50'
-                  : 'border-gray-200 hover:border-pink-300'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <CreditCard className="w-6 h-6 text-pink-600" />
-                <div className="text-left">
-                  <div className="font-semibold">Card Payment</div>
-                  <div className="text-sm text-gray-600">Credit/Debit card - All major cards accepted</div>
-                </div>
-                {paymentMethod === 'card' && (
-                  <CheckCircle className="w-5 h-5 text-pink-600 ml-auto" />
-                )}
-              </div>
-            </button>
+              {/* Main Message */}
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Pay to this Number</h3>
+              <p className="text-gray-600 mb-6">Send payment via UPI, PhonePe, or Google Pay</p>
 
-            {/* Cash Payment Option */}
-            <button
-              onClick={() => setPaymentMethod('cash')}
-              className={`w-full p-4 rounded-xl border-2 transition-all ${
-                paymentMethod === 'cash'
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <Banknote className="w-6 h-6 text-green-600" />
-                <div className="text-left">
-                  <div className="font-semibold">Pay at Parlor</div>
-                  <div className="text-sm text-gray-600">Pay with cash when you arrive - No advance payment</div>
+              {/* Phone Number */}
+              <div className="bg-white rounded-xl p-6 shadow-md border border-pink-100 mb-6">
+                <p className="text-sm text-gray-500 mb-2">Payment Number</p>
+                <p className="text-3xl font-bold text-pink-600 tracking-wide">9740303404</p>
+                <div className="flex items-center justify-center space-x-2 mt-3">
+                  <a
+                    href="tel:9740303404"
+                    className="bg-pink-100 text-pink-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-200 transition-colors flex items-center space-x-2"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Call</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText('9740303404');
+                      alert('Number copied to clipboard!');
+                    }}
+                    className="bg-purple-100 text-purple-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors"
+                  >
+                    📋 Copy Number
+                  </button>
                 </div>
-                {paymentMethod === 'cash' && (
-                  <CheckCircle className="w-5 h-5 text-green-600 ml-auto" />
-                )}
               </div>
-            </button>
+
+              {/* Payment Apps */}
+              <div className="flex items-center justify-center space-x-3 mb-6">
+                <span className="text-sm text-gray-500">Pay using:</span>
+                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">PhonePe</span>
+                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">GPay</span>
+              </div>
+
+              {/* Amount to Pay */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                <p className="text-sm text-green-600 mb-1">Amount to Pay</p>
+                <p className="text-3xl font-bold text-green-600">₹{appointment.totalPrice}</p>
+              </div>
+
+              {/* Instructions */}
+              <div className="text-left bg-gray-50 rounded-xl p-4 text-sm text-gray-600">
+                <p className="font-semibold text-gray-800 mb-2">📝 Instructions:</p>
+                <ul className="space-y-1">
+                  <li>1. Open any UPI app (PhonePe, GPay)</li>
+                  <li>2. Send ₹{appointment.totalPrice} to 9740303404</li>
+                  <li>3. Take a screenshot of payment confirmation</li>
+                  <li>4. Click the button below to confirm</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          {/* UPI Payment Details */}
-          {paymentMethod === 'upi' && (
-            <div className="bg-gray-50 rounded-xl p-6 mb-6">
-              <div className="text-center">
-                <div className="bg-white p-4 rounded-xl inline-block mb-4 shadow-sm">
-                  <div className="w-48 h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <QrCode className="w-24 h-24 text-gray-400" />
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mb-2">Scan QR code with any UPI app</p>
-                <p className="font-mono text-sm bg-white px-3 py-2 rounded-lg inline-block border">
-                  {upiId}
-                </p>
-                <div className="flex items-center justify-center space-x-4 mt-4 text-sm text-gray-500">
-                  <span>Supported apps:</span>
-                  <div className="flex space-x-2">
-                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">Paytm</span>
-                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded">PhonePe</span>
-                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">GPay</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Card Payment Details */}
-          {paymentMethod === 'card' && (
-            <div className="bg-gray-50 rounded-xl p-6 mb-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                  <input
-                    type="text"
-                    value={cardDetails.number}
-                    onChange={(e) => handleCardInputChange('number', e.target.value)}
-                    placeholder="1234 5678 9012 3456"
-                    maxLength={19}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                    <input
-                      type="text"
-                      value={cardDetails.expiry}
-                      onChange={(e) => handleCardInputChange('expiry', e.target.value)}
-                      placeholder="MM/YY"
-                      maxLength={5}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                    <input
-                      type="text"
-                      value={cardDetails.cvv}
-                      onChange={(e) => handleCardInputChange('cvv', e.target.value)}
-                      placeholder="123"
-                      maxLength={3}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
-                  <input
-                    type="text"
-                    value={cardDetails.name}
-                    onChange={(e) => handleCardInputChange('name', e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Cash Payment Details */}
-          {paymentMethod === 'cash' && (
-            <div className="bg-green-50 rounded-xl p-6 mb-6 border border-green-200">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 mb-4">
-                  <Banknote className="w-8 h-8 text-green-600" />
-                  <div>
-                    <h4 className="font-semibold text-green-800">Pay at Parlor</h4>
-                    <p className="text-sm text-green-600">No advance payment required</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border border-green-200">
-                  <h5 className="font-medium text-gray-800 mb-3">Important Information:</h5>
-                  <div className="space-y-3 text-sm text-gray-600">
-                    <div className="flex items-start space-x-2">
-                      <MapPin className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-medium">Location:</span> AKSHATA PARLOR, Main Street, Beauty Plaza
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <Clock className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-medium">Arrival:</span> Please arrive 10 minutes before your appointment time
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <Banknote className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-medium">Payment:</span> Cash payment accepted at the counter after service completion
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <Phone className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-medium">Notification:</span> Akshata will still be notified about your booking
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm">
-                      <p className="font-medium text-yellow-800 mb-1">Please Note:</p>
-                      <ul className="text-yellow-700 space-y-1">
-                        <li>• Exact change is appreciated but not required</li>
-                        <li>• We accept denominations of ₹10 and above</li>
-                        <li>• Receipt will be provided after payment</li>
-                        <li>• Cancellation must be done 2 hours before appointment</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-green-100 border border-green-300 rounded-lg p-4">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <div className="text-sm">
-                      <span className="font-medium text-green-800">Booking Confirmed!</span>
-                      <p className="text-green-700">Your appointment is reserved. Pay when you arrive.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Payment Button */}
+          {/* Confirm Payment Button */}
           <button
             onClick={handlePayment}
-            disabled={isProcessing || (paymentMethod === 'card' && (!cardDetails.number || !cardDetails.expiry || !cardDetails.cvv || !cardDetails.name))}
-            className={`w-full py-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 ${
-              paymentMethod === 'cash'
-                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800'
-                : 'bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700'
-            }`}
+            disabled={isProcessing}
+            className="w-full mt-6 py-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
           >
             {isProcessing ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>
-                  {paymentMethod === 'cash' ? 'Confirming Booking & Notifying Akshata...' : 'Processing Payment & Notifying Akshata...'}
-                </span>
+                <span>Confirming Payment & Notifying Akshata...</span>
               </>
             ) : (
               <>
-                {paymentMethod === 'cash' ? (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    <span>Confirm Booking (Pay at Parlor)</span>
-                  </>
-                ) : (
-                  <>
-                    <Smartphone className="w-5 h-5" />
-                    <span>Pay ₹{appointment.totalPrice}</span>
-                  </>
-                )}
+                <CheckCircle className="w-5 h-5" />
+                <span>I've Paid ₹{appointment.totalPrice} - Confirm Booking</span>
               </>
             )}
           </button>
@@ -473,29 +305,7 @@ Email: ${userEmail}
           {/* Security Notice */}
           <div className="mt-4 text-center text-sm text-gray-500">
             <CheckCircle className="w-4 h-4 inline mr-1" />
-            {paymentMethod === 'cash' 
-              ? 'Your booking is secure and Akshata will be notified immediately'
-              : 'Secure payment with instant notification to Akshata'
-            }
-          </div>
-
-          {/* Payment Method Benefits */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className={`p-3 rounded-lg border ${paymentMethod === 'upi' ? 'bg-pink-50 border-pink-200' : 'bg-gray-50 border-gray-200'}`}>
-              <QrCode className="w-5 h-5 text-pink-600 mb-2" />
-              <div className="font-medium text-gray-800">UPI Payment</div>
-              <div className="text-gray-600">Instant & Secure</div>
-            </div>
-            <div className={`p-3 rounded-lg border ${paymentMethod === 'card' ? 'bg-pink-50 border-pink-200' : 'bg-gray-50 border-gray-200'}`}>
-              <CreditCard className="w-5 h-5 text-pink-600 mb-2" />
-              <div className="font-medium text-gray-800">Card Payment</div>
-              <div className="text-gray-600">All Cards Accepted</div>
-            </div>
-            <div className={`p-3 rounded-lg border ${paymentMethod === 'cash' ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
-              <Banknote className="w-5 h-5 text-green-600 mb-2" />
-              <div className="font-medium text-gray-800">Cash Payment</div>
-              <div className="text-gray-600">Pay at Parlor</div>
-            </div>
+            Akshata will be notified immediately when you confirm
           </div>
         </div>
       </div>
@@ -512,7 +322,7 @@ Email: ${userEmail}
               <p className="text-gray-600 mb-6">
                 Are you sure you want to cancel this payment? You'll be redirected back to the booking page and will need to start over.
               </p>
-              
+
               <div className="flex space-x-4">
                 <button
                   onClick={() => setShowCancelConfirm(false)}

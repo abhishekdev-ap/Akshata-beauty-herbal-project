@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Hair/Veil - Bigger -->
+  <path d="M80 220 Q120 40 256 20 Q392 40 432 220 Q450 300 430 400 L82 400 Q62 300 80 220" fill="#1f2937"/>
+  
+  <!-- Face - Much Bigger -->
+  <ellipse cx="256" cy="280" rx="130" ry="160" fill="#fde4cf"/>
+  
+  <!-- Hair Parting -->
+  <path d="M256 20 L256 150" stroke="#111827" stroke-width="8"/>
+  
+  <!-- Maang Tikka Chain -->
+  <path d="M256 150 L256 180" stroke="url(#goldGrad)" stroke-width="6"/>
+  <circle cx="256" cy="195" r="18" fill="url(#goldGrad)"/>
+  <circle cx="256" cy="195" r="10" fill="#ef4444"/>
+  
+  <!-- Bindi -->
+  <circle cx="256" cy="240" r="14" fill="#ef4444"/>
+  
+  <!-- Eyebrows -->
+  <path d="M160 280 Q190 265 220 275" stroke="#1f2937" stroke-width="6" fill="none"/>
+  <path d="M292 275 Q322 265 352 280" stroke="#1f2937" stroke-width="6" fill="none"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="190" cy="310" rx="25" ry="15" fill="#fff"/>
+  <ellipse cx="322" cy="310" rx="25" ry="15" fill="#fff"/>
+  <ellipse cx="190" cy="312" rx="12" ry="12" fill="#1f2937"/>
+  <ellipse cx="322" cy="312" rx="12" ry="12" fill="#1f2937"/>
+  <circle cx="193" cy="308" r="4" fill="#fff"/>
+  <circle cx="325" cy="308" r="4" fill="#fff"/>
+  
+  <!-- Eyeliner -->
+  <path d="M165 310 Q175 325 220 315" stroke="#1f2937" stroke-width="3" fill="none"/>
+  <path d="M292 315 Q337 325 347 310" stroke="#1f2937" stroke-width="3" fill="none"/>
+  
+  <!-- Nose -->
+  <path d="M256 320 L248 370 Q256 380 264 370 L256 320" fill="#e8c4a8"/>
+  
+  <!-- Nose Ring -->
+  <circle cx="240" cy="375" r="10" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+  <circle cx="232" cy="380" r="6" fill="url(#goldGrad)"/>
+  
+  <!-- Lips -->
+  <ellipse cx="256" cy="420" rx="35" ry="18" fill="#ef4444"/>
+  <path d="M221 420 Q256 410 291 420" stroke="#b91c1c" stroke-width="2" fill="none"/>
+  
+  <!-- Earrings -->
+  <circle cx="95" cy="320" r="20" fill="url(#goldGrad)"/>
+  <circle cx="95" cy="355" r="15" fill="url(#goldGrad)"/>
+  <circle cx="95" cy="385" r="12" fill="#ef4444"/>
+  <circle cx="417" cy="320" r="20" fill="url(#goldGrad)"/>
+  <circle cx="417" cy="355" r="15" fill="url(#goldGrad)"/>
+  <circle cx="417" cy="385" r="12" fill="#ef4444"/>
+  
+  <!-- Necklace -->
+  <path d="M120 480 Q180 440 256 450 Q332 440 392 480" fill="none" stroke="url(#goldGrad)" stroke-width="12"/>
+  <circle cx="256" cy="465" r="20" fill="url(#goldGrad)"/>
+  <circle cx="256" cy="465" r="12" fill="#ef4444"/>
+</svg>

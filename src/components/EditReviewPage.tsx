@@ -7,13 +7,14 @@ interface EditReviewPageProps {
   onBack: () => void;
   onReviewUpdate: (updatedReview: Review) => void;
   userId?: string;
+  isDarkMode?: boolean;
 }
 
-const EditReviewPage: React.FC<EditReviewPageProps> = ({ 
-  review, 
-  onBack, 
-  onReviewUpdate, 
-  userId 
+const EditReviewPage: React.FC<EditReviewPageProps> = ({
+  review,
+  onBack,
+  onReviewUpdate,
+  userId
 }) => {
   const [rating, setRating] = useState(review.rating);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -40,7 +41,7 @@ const EditReviewPage: React.FC<EditReviewPageProps> = ({
     const hasCommentChanged = comment.trim() !== review.comment;
     const hasNameChanged = customerName.trim() !== (review.customerName || '');
     const hasServicesChanged = JSON.stringify(services.sort()) !== JSON.stringify((review.services || []).sort());
-    
+
     setHasChanges(hasRatingChanged || hasCommentChanged || hasNameChanged || hasServicesChanged);
   }, [rating, comment, customerName, services, review]);
 
@@ -158,7 +159,7 @@ const EditReviewPage: React.FC<EditReviewPageProps> = ({
             <span>Back</span>
           </button>
           <h2 className="text-2xl font-bold mb-2">Edit Your Review</h2>
-          <p className="opacity-90">Update your experience at AKSHATA PARLOR</p>
+          <p className="opacity-90">Update your experience at AKSHATA PARLOUR</p>
         </div>
 
         {/* Changes Indicator */}
@@ -198,7 +199,7 @@ const EditReviewPage: React.FC<EditReviewPageProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Services You Used (Optional)
             </label>
-            
+
             {/* Selected Services */}
             {services.length > 0 && (
               <div className="mb-3">
@@ -261,11 +262,10 @@ const EditReviewPage: React.FC<EditReviewPageProps> = ({
                     className="transition-all duration-200 hover:scale-110 focus:outline-none"
                   >
                     <Star
-                      className={`w-12 h-12 ${
-                        star <= (hoveredRating || rating)
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300 hover:text-yellow-200'
-                      }`}
+                      className={`w-12 h-12 ${star <= (hoveredRating || rating)
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-300 hover:text-yellow-200'
+                        }`}
                     />
                   </button>
                 ))}
@@ -284,7 +284,7 @@ const EditReviewPage: React.FC<EditReviewPageProps> = ({
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell us about your experience at Akshata Parlor. What did you like? How was the service? Would you recommend us to others?"
+              placeholder="Tell us about your experience at Akshata Beauty Herbal Parlour. What did you like? How was the service? Would you recommend us to others?"
               rows={5}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               required
@@ -302,7 +302,7 @@ const EditReviewPage: React.FC<EditReviewPageProps> = ({
             >
               <span>Cancel</span>
             </button>
-            
+
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || rating === 0 || !customerName.trim() || !comment.trim() || !hasChanges}

@@ -1,44 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import LoginPage from './components/LoginPage';
-import ForgotPasswordPage from './components/ForgotPasswordPage';
-import ResetLinkSentPage from './components/ResetLinkSentPage';
-import ResetPasswordPage from './components/ResetPasswordPage';
-import PasswordResetSuccessPage from './components/PasswordResetSuccessPage';
-import Header from './components/Header';
-import BookingPage from './components/BookingPage';
-import PaymentPage from './components/PaymentPage';
-import ReviewPage from './components/ReviewPage';
-import ThankYouPage from './components/ThankYouPage';
-import CustomerReviewsPage from './components/CustomerReviewsPage';
-import WriteReviewPage from './components/WriteReviewPage';
-import EditReviewPage from './components/EditReviewPage';
-import AccountSettingsPage from './components/AccountSettingsPage';
-import PaymentHistoryPage from './components/PaymentHistoryPage';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import AuthService from './services/authService';
+import { isAdmin } from './config/admin';
 import { User, Appointment, Review } from './types';
 import { mockReviews } from './data/mockReviews';
 
-type AppState = 
-  | 'login' 
-  | 'forgot-password' 
-  | 'reset-link-sent' 
-  | 'reset-password' 
+// Lazy load components
+const LoginPage = lazy(() => import('./components/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage'));
+const ResetLinkSentPage = lazy(() => import('./components/ResetLinkSentPage'));
+const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage'));
+const PasswordResetSuccessPage = lazy(() => import('./components/PasswordResetSuccessPage'));
+const Header = lazy(() => import('./components/Header'));
+const HomePage = lazy(() => import('./components/HomePage'));
+const BookingPage = lazy(() => import('./components/BookingPage'));
+const PaymentPage = lazy(() => import('./components/PaymentPage'));
+const ReviewPage = lazy(() => import('./components/ReviewPage'));
+const ThankYouPage = lazy(() => import('./components/ThankYouPage'));
+const CustomerReviewsPage = lazy(() => import('./components/CustomerReviewsPage'));
+const WriteReviewPage = lazy(() => import('./components/WriteReviewPage'));
+const EditReviewPage = lazy(() => import('./components/EditReviewPage'));
+const AccountSettingsPage = lazy(() => import('./components/AccountSettingsPage'));
+const PaymentHistoryPage = lazy(() => import('./components/PaymentHistoryPage'));
+const AdminDashboardPage = lazy(() => import('./components/AdminDashboardPage'));
+const BusinessSettingsPage = lazy(() => import('./components/BusinessSettingsPage'));
+
+type AppState =
+  | 'login'
+  | 'forgot-password'
+  | 'reset-link-sent'
+  | 'reset-password'
   | 'password-reset-success'
-  | 'booking' 
-  | 'payment' 
-  | 'review' 
-  | 'thankyou' 
-  | 'customer-reviews' 
-  | 'write-review' 
-  | 'edit-review' 
+  | 'home'
+  | 'booking'
+  | 'payment'
+  | 'review'
+  | 'thankyou'
+  | 'customer-reviews'
+  | 'write-review'
+  | 'edit-review'
   | 'account-settings'
-  | 'payment-history';
+  | 'payment-history'
+  | 'admin-dashboard'
+  | 'business-settings';
 
 function App() {
   const [currentState, setCurrentState] = useState<AppState>('login');
   const [user, setUser] = useState<User | null>(null);
   const [currentAppointment, setCurrentAppointment] = useState<Appointment | null>(null);
-  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [_userReviews, setUserReviews] = useState<Review[]>([]);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [resetEmail, setResetEmail] = useState('');
@@ -64,7 +73,7 @@ function App() {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
     localStorage.setItem('akshata_dark_mode', JSON.stringify(newDarkMode));
-    
+
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -78,7 +87,7 @@ function App() {
       const currentUser = authService.getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
-        setCurrentState('booking');
+        setCurrentState('home');
       }
       setIsLoading(false);
     };
@@ -98,7 +107,7 @@ function App() {
 
   const handleLogin = (userData: User) => {
     setUser(userData);
-    setCurrentState('booking');
+    setCurrentState('home');
   };
 
   const handleLogout = () => {
@@ -127,7 +136,6 @@ function App() {
   };
 
   const handleResendResetLink = async () => {
-    // In a real app, this would trigger another API call
     try {
       const result = await authService.requestPasswordReset(resetEmail);
       if (result.success) {
@@ -160,7 +168,6 @@ function App() {
 
   const handleReviewSubmit = (review: Review) => {
     console.log('Review submitted:', review);
-    // Add review to the global reviews array
     mockReviews.push(review);
     setUserReviews(prev => [...prev, review]);
     setCurrentState('thankyou');
@@ -168,6 +175,10 @@ function App() {
 
   const handleBackToHome = () => {
     setCurrentAppointment(null);
+    setCurrentState('home');
+  };
+
+  const handleGoToBooking = () => {
     setCurrentState('booking');
   };
 
@@ -176,7 +187,7 @@ function App() {
   };
 
   const handleBackFromReviews = () => {
-    setCurrentState('booking');
+    setCurrentState('home');
   };
 
   const handleWriteReview = () => {
@@ -189,10 +200,8 @@ function App() {
 
   const handleManualReviewSubmit = (review: Review) => {
     console.log('Manual review submitted:', review);
-    // Add review to the global reviews array
     mockReviews.push(review);
     setUserReviews(prev => [...prev, review]);
-    // The WriteReviewPage component handles the redirect back to customer-reviews
   };
 
   const handleEditReview = (review: Review) => {
@@ -207,20 +216,17 @@ function App() {
 
   const handleReviewUpdate = (updatedReview: Review) => {
     console.log('Review updated:', updatedReview);
-    
-    // Find and update the review in the global reviews array
+
     const reviewIndex = mockReviews.findIndex(r => r.id === updatedReview.id);
     if (reviewIndex !== -1) {
       mockReviews[reviewIndex] = updatedReview;
     }
-    
-    // Update local state
-    setUserReviews(prev => 
+
+    setUserReviews(prev =>
       prev.map(r => r.id === updatedReview.id ? updatedReview : r)
     );
-    
+
     setEditingReview(null);
-    // The EditReviewPage component handles the redirect back to customer-reviews
   };
 
   const handleAccountSettings = () => {
@@ -228,7 +234,7 @@ function App() {
   };
 
   const handleBackFromAccountSettings = () => {
-    setCurrentState('booking');
+    setCurrentState('home');
   };
 
   const handleUserUpdate = (updatedUser: User) => {
@@ -240,7 +246,23 @@ function App() {
   };
 
   const handleBackFromPaymentHistory = () => {
-    setCurrentState('booking');
+    setCurrentState('home');
+  };
+
+  const handleAdminDashboard = () => {
+    setCurrentState('admin-dashboard');
+  };
+
+  const handleBackFromAdminDashboard = () => {
+    setCurrentState('home');
+  };
+
+  const handleBusinessSettings = () => {
+    setCurrentState('business-settings');
+  };
+
+  const handleBackFromBusinessSettings = () => {
+    setCurrentState('home');
   };
 
   // Show loading screen while checking session
@@ -251,139 +273,177 @@ function App() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mb-4 shadow-lg">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
           </div>
-          <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'} mb-2`}>AKSHATA PARLOR</h2>
+          <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-700'} mb-2`}>AKSHATA BEAUTY HERBAL PARLOUR</h2>
           <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Loading your session...</p>
         </div>
       </div>
     );
   }
 
-  // Password Recovery Flow
-  if (currentState === 'login') {
-    return <LoginPage onLogin={handleLogin} onForgotPassword={handleForgotPassword} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />;
-  }
-
-  if (currentState === 'forgot-password') {
-    return <ForgotPasswordPage onBack={handleBackToLogin} onResetSent={handleResetLinkSent} isDarkMode={isDarkMode} />;
-  }
-
-  if (currentState === 'reset-link-sent') {
-    return (
-      <ResetLinkSentPage 
-        email={resetEmail}
-        onBack={handleBackToLogin}
-        onResendLink={handleResendResetLink}
-        isDarkMode={isDarkMode}
-      />
-    );
-  }
-
-  if (currentState === 'reset-password') {
-    return (
-      <ResetPasswordPage 
-        email={resetEmail}
-        token={resetToken}
-        onPasswordReset={handlePasswordReset}
-        onBack={() => setCurrentState('reset-link-sent')}
-        isDarkMode={isDarkMode}
-      />
-    );
-  }
-
-  if (currentState === 'password-reset-success') {
-    return <PasswordResetSuccessPage onBackToLogin={handleBackToLogin} isDarkMode={isDarkMode} />;
-  }
+  const LoadingFallback = () => (
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+    </div>
+  );
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {user && currentState !== 'customer-reviews' && currentState !== 'write-review' && currentState !== 'edit-review' && currentState !== 'account-settings' && currentState !== 'payment-history' && (
-        <Header 
-          user={user} 
-          onLogout={handleLogout}
-          onAccountSettings={handleAccountSettings}
-          onPaymentHistory={handlePaymentHistory}
-          isDarkMode={isDarkMode}
-          onToggleDarkMode={toggleDarkMode}
-        />
-      )}
-      
-      {currentState === 'booking' && user && (
-        <BookingPage 
-          onBookingComplete={handleBookingComplete} 
-          onViewReviews={handleViewReviews}
-          userId={user.id}
-          isDarkMode={isDarkMode}
-        />
-      )}
-      
-      {currentState === 'payment' && currentAppointment && (
-        <PaymentPage 
-          appointment={currentAppointment} 
-          onPaymentComplete={handlePaymentComplete}
-          onBack={handleBackToBooking}
-          isDarkMode={isDarkMode}
-        />
-      )}
-      
-      {currentState === 'review' && currentAppointment && (
-        <ReviewPage 
-          appointment={currentAppointment} 
-          onReviewSubmit={handleReviewSubmit}
-          isDarkMode={isDarkMode}
-        />
-      )}
-      
-      {currentState === 'thankyou' && (
-        <ThankYouPage onBackToHome={handleBackToHome} isDarkMode={isDarkMode} />
+    <Suspense fallback={<LoadingFallback />}>
+      {/* Password Recovery Flow */}
+      {currentState === 'login' && (
+        <LoginPage onLogin={handleLogin} onForgotPassword={handleForgotPassword} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
       )}
 
-      {currentState === 'customer-reviews' && (
-        <CustomerReviewsPage 
-          onBack={handleBackFromReviews}
-          onWriteReview={handleWriteReview}
-          onEditReview={handleEditReview}
-          currentUserId={user?.id}
+      {currentState === 'forgot-password' && (
+        <ForgotPasswordPage onBack={handleBackToLogin} onResetSent={handleResetLinkSent} isDarkMode={isDarkMode} />
+      )}
+
+      {currentState === 'reset-link-sent' && (
+        <ResetLinkSentPage
+          email={resetEmail}
+          onBack={handleBackToLogin}
+          onResendLink={handleResendResetLink}
           isDarkMode={isDarkMode}
         />
       )}
 
-      {currentState === 'write-review' && (
-        <WriteReviewPage 
-          onBack={handleBackFromWriteReview}
-          onReviewSubmit={handleManualReviewSubmit}
-          userId={user?.id}
+      {currentState === 'reset-password' && (
+        <ResetPasswordPage
+          email={resetEmail}
+          token={resetToken}
+          onPasswordReset={handlePasswordReset}
+          onBack={() => setCurrentState('reset-link-sent')}
           isDarkMode={isDarkMode}
         />
       )}
 
-      {currentState === 'edit-review' && editingReview && (
-        <EditReviewPage 
-          review={editingReview}
-          onBack={handleBackFromEditReview}
-          onReviewUpdate={handleReviewUpdate}
-          userId={user?.id}
-          isDarkMode={isDarkMode}
-        />
+      {currentState === 'password-reset-success' && (
+        <PasswordResetSuccessPage onBackToLogin={handleBackToLogin} isDarkMode={isDarkMode} />
       )}
 
-      {currentState === 'account-settings' && user && (
-        <AccountSettingsPage 
-          user={user}
-          onBack={handleBackFromAccountSettings}
-          onUserUpdate={handleUserUpdate}
-          isDarkMode={isDarkMode}
-          onToggleDarkMode={toggleDarkMode}
-        />
-      )}
+      {/* Main App Flow */}
+      {user && !['login', 'forgot-password', 'reset-link-sent', 'reset-password', 'password-reset-success'].includes(currentState) && (
+        <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+          {currentState !== 'home' && currentState !== 'customer-reviews' && currentState !== 'write-review' && currentState !== 'edit-review' && currentState !== 'account-settings' && currentState !== 'payment-history' && (
+            <Header
+              user={user}
+              onLogout={handleLogout}
+              onAccountSettings={handleAccountSettings}
+              onPaymentHistory={handlePaymentHistory}
+              onAdminDashboard={handleAdminDashboard}
+              isUserAdmin={isAdmin(user.email)}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+            />
+          )}
 
-      {currentState === 'payment-history' && user && (
-        <PaymentHistoryPage 
-          user={user}
-          onBack={handleBackFromPaymentHistory}
-          isDarkMode={isDarkMode}
-        />
+          {currentState === 'home' && (
+            <HomePage
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+              onBookNow={handleGoToBooking}
+              onAdminDashboard={handleAdminDashboard}
+              onLogout={handleLogout}
+              isUserAdmin={isAdmin(user.email)}
+            />
+          )}
+
+          {currentState === 'booking' && (
+            <BookingPage
+              onBookingComplete={handleBookingComplete}
+              onViewReviews={handleViewReviews}
+              onGoHome={handleBackToHome}
+              userId={user.id}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+            />
+          )}
+
+          {currentState === 'payment' && currentAppointment && (
+            <PaymentPage
+              appointment={currentAppointment}
+              onPaymentComplete={handlePaymentComplete}
+              onBack={handleBackToBooking}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {currentState === 'review' && currentAppointment && (
+            <ReviewPage
+              appointment={currentAppointment}
+              onReviewSubmit={handleReviewSubmit}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {currentState === 'thankyou' && (
+            <ThankYouPage onBackToHome={handleBackToHome} isDarkMode={isDarkMode} />
+          )}
+
+          {currentState === 'customer-reviews' && (
+            <CustomerReviewsPage
+              onBack={handleBackFromReviews}
+              onWriteReview={handleWriteReview}
+              onEditReview={handleEditReview}
+              currentUserId={user?.id}
+              isDarkMode={isDarkMode}
+              isAdmin={user ? isAdmin(user.email) : false}
+            />
+          )}
+
+          {currentState === 'write-review' && (
+            <WriteReviewPage
+              onBack={handleBackFromWriteReview}
+              onReviewSubmit={handleManualReviewSubmit}
+              userId={user?.id}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {currentState === 'edit-review' && editingReview && (
+            <EditReviewPage
+              review={editingReview}
+              onBack={handleBackFromEditReview}
+              onReviewUpdate={handleReviewUpdate}
+              userId={user?.id}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {currentState === 'account-settings' && (
+            <AccountSettingsPage
+              user={user}
+              onBack={handleBackFromAccountSettings}
+              onUserUpdate={handleUserUpdate}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+            />
+          )}
+
+          {currentState === 'payment-history' && (
+            <PaymentHistoryPage
+              user={user}
+              onBack={handleBackFromPaymentHistory}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {currentState === 'admin-dashboard' && (
+            <AdminDashboardPage
+              onBack={handleBackFromAdminDashboard}
+              onBusinessSettings={handleBusinessSettings}
+              isDarkMode={isDarkMode}
+            />
+          )}
+
+          {currentState === 'business-settings' && (
+            <BusinessSettingsPage
+              onBack={handleBackFromBusinessSettings}
+              isDarkMode={isDarkMode}
+            />
+          )}
+        </div>
       )}
-    </div>
+    </Suspense>
   );
 }
 

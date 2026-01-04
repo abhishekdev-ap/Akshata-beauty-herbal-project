@@ -137,3 +137,4 @@ npm – Package management
 
 Environment Variables – Configurable settings# -Parlor-project-Full-stack-development-
 
+# Akshata-beauty-herbal-project

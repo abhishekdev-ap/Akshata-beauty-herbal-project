@@ -38,7 +38,7 @@ export class PDFService {
     // Company Logo Area (using text for now, can be replaced with actual logo)
     doc.setFillColor(236, 72, 153); // Pink color
     doc.circle(30, 30, 12, 'F');
-    
+
     // Add sparkle symbol in logo
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
@@ -48,7 +48,7 @@ export class PDFService {
     doc.setTextColor(236, 72, 153);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('AKSHATA PARLOR', 50, 25);
+    doc.text('AKSHATA BEAUTY HERBAL PARLOUR', 50, 25);
 
     // Tagline
     doc.setTextColor(107, 114, 128);
@@ -72,20 +72,20 @@ export class PDFService {
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.text('PAYMENT RECEIPT', 105, yPosition, { align: 'center' });
-    
+
     return yPosition + 15;
   }
 
   private addPaymentInfo(doc: jsPDF, payment: PaymentHistory, yPosition: number): number {
     const leftColumn = 25;
     const rightColumn = 110;
-    
+
     // Payment Details Section
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
     doc.text('Payment Information', leftColumn, yPosition);
-    
+
     yPosition += 10;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -95,13 +95,13 @@ export class PDFService {
     doc.text('Receipt No:', leftColumn, yPosition);
     doc.setTextColor(0, 0, 0);
     doc.text(payment.id.toUpperCase(), leftColumn + 25, yPosition);
-    
+
     yPosition += 8;
     doc.setTextColor(75, 85, 99);
     doc.text('Payment ID:', leftColumn, yPosition);
     doc.setTextColor(0, 0, 0);
     doc.text(payment.paymentId || 'N/A', leftColumn + 25, yPosition);
-    
+
     yPosition += 8;
     doc.setTextColor(75, 85, 99);
     doc.text('Date & Time:', leftColumn, yPosition);
@@ -114,12 +114,12 @@ export class PDFService {
     doc.text('Customer Name:', rightColumn, rightYStart);
     doc.setTextColor(0, 0, 0);
     doc.text(payment.customerName, rightColumn + 30, rightYStart);
-    
+
     doc.setTextColor(75, 85, 99);
     doc.text('Email:', rightColumn, rightYStart + 8);
     doc.setTextColor(0, 0, 0);
     doc.text(payment.customerEmail, rightColumn + 30, rightYStart + 8);
-    
+
     doc.setTextColor(75, 85, 99);
     doc.text('Payment Method:', rightColumn, rightYStart + 16);
     doc.setTextColor(0, 0, 0);
@@ -134,7 +134,7 @@ export class PDFService {
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
     doc.text('Services Breakdown', 25, yPosition);
-    
+
     yPosition += 10;
 
     // Table Header
@@ -170,7 +170,7 @@ export class PDFService {
 
     payment.services.forEach((service, index) => {
       const isEvenRow = index % 2 === 0;
-      
+
       // Alternate row background
       if (isEvenRow) {
         doc.setFillColor(249, 250, 251);
@@ -179,22 +179,22 @@ export class PDFService {
 
       // Service details
       doc.setFontSize(9);
-      
+
       // Service name (truncate if too long)
       const serviceName = service.name.length > 35 ? service.name.substring(0, 32) + '...' : service.name;
       doc.text(serviceName, colPositions[0], yPosition + 5);
-      
+
       // Duration
       doc.text(`${service.duration} min`, colPositions[1], yPosition + 5);
-      
+
       // Category
       doc.text(service.category === 'bridal' ? 'Bridal' : 'Regular', colPositions[2], yPosition + 5);
-      
+
       // Amount
       doc.text(`₹${service.price.toLocaleString()}`, colPositions[3], yPosition + 5);
 
       yPosition += rowHeight;
-      
+
       // Row border
       doc.line(20, yPosition, 190, yPosition);
     });
@@ -222,7 +222,7 @@ export class PDFService {
     // Status section
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    
+
     const statusColors = {
       paid: [34, 197, 94],    // Green
       pending: [251, 191, 36], // Yellow
@@ -231,7 +231,7 @@ export class PDFService {
     };
 
     const statusColor = statusColors[payment.paymentStatus as keyof typeof statusColors] || [107, 114, 128];
-    
+
     doc.setTextColor(...statusColor);
     doc.text('Payment Status:', 25, yPosition);
     doc.text(payment.paymentStatus.toUpperCase(), 70, yPosition);
@@ -243,7 +243,7 @@ export class PDFService {
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(75, 85, 99);
       doc.text('Notes:', 25, yPosition);
-      
+
       // Split notes into multiple lines if too long
       const noteLines = doc.splitTextToSize(payment.notes, 140);
       doc.text(noteLines, 25, yPosition + 6);
@@ -266,7 +266,7 @@ export class PDFService {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(236, 72, 153);
-    doc.text('Thank you for choosing AKSHATA PARLOR!', 105, footerY + 10, { align: 'center' });
+    doc.text('Thank you for choosing AKSHATA BEAUTY HERBAL PARLOUR!', 105, footerY + 10, { align: 'center' });
 
     // Footer text
     doc.setFontSize(9);
@@ -277,14 +277,14 @@ export class PDFService {
 
     // Copyright
     doc.setFontSize(8);
-    doc.text(`© ${new Date().getFullYear()} AKSHATA PARLOR. All rights reserved.`, 105, footerY + 32, { align: 'center' });
+    doc.text(`© ${new Date().getFullYear()} AKSHATA BEAUTY HERBAL PARLOUR. All rights reserved.`, 105, footerY + 32, { align: 'center' });
   }
 
   generateReceipt(payment: PaymentHistory): void {
     try {
       // Create new PDF document
       const doc = new jsPDF();
-      
+
       let yPosition = 80;
 
       // Add header
@@ -310,7 +310,7 @@ export class PDFService {
 
       // Generate filename
       const date = new Date(payment.transactionDate).toISOString().split('T')[0];
-      const filename = `AKSHATA_PARLOR_Receipt_${payment.id}_${date}.pdf`;
+      const filename = `AKSHATA_PARLOUR_Receipt_${payment.id}_${date}.pdf`;
 
       // Save the PDF
       doc.save(filename);
@@ -372,7 +372,7 @@ export class PDFService {
 
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-      const filename = `AKSHATA_PARLOR_Detailed_Receipt_${payment.id}_${timestamp}.pdf`;
+      const filename = `AKSHATA_PARLOUR_Detailed_Receipt_${payment.id}_${timestamp}.pdf`;
 
       // Save the PDF
       doc.save(filename);

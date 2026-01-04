@@ -5,6 +5,7 @@ export interface User {
   avatar?: string;
   createdAt?: string;
   lastLogin?: string;
+  role?: 'admin' | 'customer';
 }
 
 export interface Service {
@@ -24,6 +25,9 @@ export interface Appointment {
   time: string;
   totalPrice: number;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  serviceLocation: 'parlor' | 'home';
+  customerAddress?: string;
+  customerPhone?: string;
   notes?: string;
   paymentMethod?: 'upi' | 'card' | 'cash';
   paymentStatus?: 'pending' | 'paid' | 'failed' | 'refunded';

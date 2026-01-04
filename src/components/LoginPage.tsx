@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Sparkles, Shield, Clock, Users, Award, User, Lock, Eye, EyeOff, AlertCircle, CheckCircle, Heart, Star } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle, X, Scissors } from 'lucide-react';
 import AuthService from '../services/authService';
 import AnimatedDarkModeToggle from './AnimatedDarkModeToggle';
 
@@ -10,44 +10,51 @@ interface LoginPageProps {
   onToggleDarkMode?: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ 
-  onLogin, 
-  onForgotPassword, 
+// Declare google global for TypeScript
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          prompt: (callback?: (notification: any) => void) => void;
+          renderButton: (element: HTMLElement, config: any) => void;
+          cancel: () => void;
+        };
+      };
+    };
+  }
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({
+  onLogin,
+  onForgotPassword,
   isDarkMode = false,
-  onToggleDarkMode 
+  onToggleDarkMode
 }) => {
+  // Demo credentials pre-filled for easy login
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [animateForm, setAnimateForm] = useState(false);
-  const [animateFeatures, setAnimateFeatures] = useState(false);
-  const [floatingElements, setFloatingElements] = useState<Array<{id: number, x: number, y: number, delay: number, type: string}>>([]);
-  
+  const [name, setName] = useState('');
+
   const authService = AuthService.getInstance();
 
-  // Trigger animations on mount
+
+
   useEffect(() => {
     const timer1 = setTimeout(() => setIsVisible(true), 100);
     const timer2 = setTimeout(() => setAnimateForm(true), 300);
-    const timer3 = setTimeout(() => setAnimateFeatures(true), 600);
-
-    // Generate floating elements
-    const elements = Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      delay: Math.random() * 5,
-      type: ['sparkle', 'heart', 'star', 'circle'][Math.floor(Math.random() * 4)]
-    }));
-    setFloatingElements(elements);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
-      clearTimeout(timer3);
     };
   }, []);
 
@@ -56,12 +63,59 @@ const LoginPage: React.FC<LoginPageProps> = ({
     return emailRegex.test(email);
   };
 
+  // Google Sign-In handler
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsGoogleLoading(true);
+
+    try {
+      // Direct email prompt for simple login (works without Google Cloud setup)
+      const googleEmail = prompt('Enter your Google email address to sign in:');
+
+      if (googleEmail && validateEmail(googleEmail)) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Format name from email
+        const formattedName = googleEmail
+          .split('@')[0]
+          .replace(/[^a-zA-Z0-9]/g, ' ')
+          .split(' ')
+          .filter((w: string) => w.length > 0)
+          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(' ') || 'User';
+
+        const user = {
+          id: 'google_' + Date.now(),
+          name: formattedName,
+          email: googleEmail,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formattedName)}&background=random&color=fff`,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+        };
+
+        onLogin(user);
+      } else if (googleEmail) {
+        setError('Please enter a valid Google email address');
+      }
+    } catch (err) {
+      console.error('Google login error:', err);
+      setError('Failed to sign in with Google. Please try again.');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email || !password) {
       setError('Please enter both email and password');
+      return;
+    }
+
+    if (!isLoginMode && !name) {
+      setError('Please enter your full name');
       return;
     }
 
@@ -78,633 +132,399 @@ const LoginPage: React.FC<LoginPageProps> = ({
     setIsLoading(true);
 
     try {
-      // Simulate network delay for better UX
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const result = await authService.login({ email, password });
-      
+
+      let result;
+      if (isLoginMode) {
+        result = await authService.login({ email, password });
+      } else {
+        result = await authService.register({ email, password }, name);
+      }
+
       if (result.success && result.user) {
         onLogin(result.user);
       } else {
-        setError(result.error || 'Login failed. Please try again.');
+        setError(result.error || (isLoginMode ? 'Login failed' : 'Registration failed'));
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Auth error:', error);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getEmailDomain = (email: string): string => {
-    return email.split('@')[1] || '';
-  };
-
-  const isPopularEmailProvider = (email: string): boolean => {
-    const domain = getEmailDomain(email).toLowerCase();
-    const popularDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'];
-    return popularDomains.includes(domain);
+  const toggleMode = () => {
+    setIsLoginMode(!isLoginMode);
+    setError('');
+    // Clear Demo Credentials if switching to Register mode to avoid confusion
+    if (isLoginMode) {
+      setEmail('');
+      setPassword('');
+      setName('');
+    }
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-all duration-1000 ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' 
-        : 'bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-100'
-    }`}>
-      {/* Enhanced Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Large floating bubbles */}
-        <div className={`absolute top-1/4 left-1/4 w-64 h-64 rounded-full opacity-20 transition-all duration-1000 ${
-          isDarkMode ? 'bg-pink-500' : 'bg-pink-300'
-        } ${isVisible ? 'scale-100 animate-float' : 'scale-0'}`}></div>
-        <div className={`absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full opacity-20 transition-all duration-1000 delay-300 ${
-          isDarkMode ? 'bg-purple-500' : 'bg-purple-300'
-        } ${isVisible ? 'scale-100 animate-float-delayed' : 'scale-0'}`}></div>
-        <div className={`absolute top-1/2 right-1/3 w-32 h-32 rounded-full opacity-20 transition-all duration-1000 delay-500 ${
-          isDarkMode ? 'bg-indigo-500' : 'bg-indigo-300'
-        } ${isVisible ? 'scale-100 animate-bounce-slow' : 'scale-0'}`}></div>
-        
-        {/* Floating cartoon elements */}
-        {floatingElements.map((element) => (
-          <div
-            key={element.id}
-            className={`absolute transition-all duration-1000 ${
-              isVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{
-              left: `${element.x}%`,
-              top: `${element.y}%`,
-              animationDelay: `${element.delay}s`
-            }}
-          >
-            {element.type === 'sparkle' && (
-              <Sparkles className={`w-4 h-4 animate-twinkle ${
-                isDarkMode ? 'text-yellow-300' : 'text-yellow-500'
-              }`} />
-            )}
-            {element.type === 'heart' && (
-              <Heart className={`w-3 h-3 animate-heartbeat ${
-                isDarkMode ? 'text-pink-300' : 'text-pink-500'
-              }`} />
-            )}
-            {element.type === 'star' && (
-              <Star className={`w-3 h-3 animate-twinkle ${
-                isDarkMode ? 'text-purple-300' : 'text-purple-500'
-              }`} />
-            )}
-            {element.type === 'circle' && (
-              <div className={`w-2 h-2 rounded-full animate-bounce-gentle ${
-                isDarkMode ? 'bg-indigo-300' : 'bg-indigo-500'
-              }`} />
-            )}
-          </div>
-        ))}
-        
-        {/* Animated gradient orbs */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full opacity-30 animate-pulse-slow"></div>
-        <div className="absolute bottom-10 right-10 w-16 h-16 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-30 animate-pulse-slow" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-10 w-12 h-12 bg-gradient-to-r from-green-400 to-teal-400 rounded-full opacity-30 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
-      </div>
-
-      <div className="max-w-md w-full relative z-10">
-        <div className={`rounded-3xl shadow-2xl p-8 text-center border backdrop-blur-sm transition-all duration-1000 transform ${
-          isDarkMode 
-            ? 'bg-gray-800/90 border-gray-700' 
-            : 'bg-white/90 border-white/50'
-        } ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 opacity-0 scale-95'}`}>
-          
-          {/* Dark Mode Toggle */}
-          {onToggleDarkMode && (
-            <div className={`flex justify-end mb-4 transition-all duration-700 delay-200 ${
-              isVisible ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
+    <div className={`min-h-screen flex items-center justify-center p-4 transition-all duration-1000 ${isDarkMode
+      ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900'
+      : 'bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200'
+      }`}>
+      {/* Main Container with Split Layout */}
+      <div className={`w-full max-w-6xl mx-auto rounded-[40px] overflow-hidden shadow-2xl transition-all duration-1000 transform ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        } ${isDarkMode
+          ? 'bg-gray-800 shadow-black/50'
+          : 'bg-white shadow-gray-400/30'
+        }`}
+        style={{ minHeight: '85vh' }}
+      >
+        <div className="flex flex-col lg:flex-row h-full">
+          {/* Left Side - Form */}
+          <div className={`lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center relative ${isDarkMode
+            ? 'bg-gradient-to-b from-gray-800 via-gray-800 to-amber-900/20'
+            : 'bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-100'
             }`}>
-              <AnimatedDarkModeToggle
-                isDarkMode={isDarkMode}
-                onToggle={onToggleDarkMode}
-                size="sm"
-                className="transition-all duration-300 hover:shadow-lg"
-              />
-            </div>
-          )}
-
-          {/* Logo and Title with enhanced animations */}
-          <div className={`mb-8 transition-all duration-1000 delay-100 ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}>
-            <div className="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full mb-4 shadow-lg transition-transform duration-500 hover:scale-110 hover:rotate-12 animate-logo-bounce">
-              <Sparkles className="w-10 h-10 text-white animate-spin-slow" />
-              {/* Orbiting elements around logo */}
-              <div className="absolute inset-0 animate-spin-reverse">
-                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                </div>
-                <div className="absolute top-1/2 -right-1 transform -translate-y-1/2">
-                  <div className="w-1.5 h-1.5 bg-pink-300 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                </div>
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                  <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                </div>
-                <div className="absolute top-1/2 -left-1 transform -translate-y-1/2">
-                  <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
-                </div>
+            {/* Logo */}
+            <div className={`mb-8 transition-all duration-700 delay-100 ${animateForm ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+              }`}>
+              <div className={`inline-flex items-center justify-center px-6 py-3 rounded-full border-2 ${isDarkMode
+                ? 'border-amber-400/30 bg-gray-700/50'
+                : 'border-amber-300/50 bg-white/80'
+                } shadow-lg backdrop-blur-sm`}>
+                <Scissors className={`w-5 h-5 mr-2 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                <span className={`text-lg font-semibold tracking-wide ${isDarkMode ? 'text-amber-400' : 'text-amber-700'
+                  }`}>AKSHATA</span>
               </div>
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2 animate-text-shimmer">
-              AKSHATA
-            </h1>
-            <h2 className={`text-2xl font-semibold mb-1 transition-colors duration-500 ${
-              isDarkMode ? 'text-gray-200' : 'text-gray-700'
-            }`}>
-              PARLOR
-            </h2>
-            <p className={`text-sm transition-colors duration-500 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
-              Beauty & Bridal Services
-            </p>
-          </div>
 
-          {/* Welcome Message */}
-          <div className={`mb-8 transition-all duration-1000 delay-200 ${
-            animateForm ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-          }`}>
-            <h3 className={`text-xl font-semibold mb-2 transition-colors duration-500 animate-bounce-gentle ${
-              isDarkMode ? 'text-gray-200' : 'text-gray-800'
-            }`}>
-              <span className="inline-block animate-wave">👋</span> Welcome! ✨
-            </h3>
-            <p className={`transition-colors duration-500 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              Sign in with your email to book appointments
-            </p>
-          </div>
-
-          {/* Error Message with animation */}
-          {error && (
-            <div className={`mb-4 p-3 border rounded-xl flex items-center space-x-2 text-red-700 transition-all duration-500 animate-shake-wiggle ${
-              isDarkMode 
-                ? 'bg-red-900/50 border-red-700' 
-                : 'bg-red-50 border-red-200'
-            }`}>
-              <AlertCircle className="w-5 h-5 flex-shrink-0 animate-bounce" />
-              <span className="text-sm">{error}</span>
-            </div>
-          )}
-
-          {/* Login Form with staggered animations */}
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-            {/* Email Input */}
-            <div className={`relative transition-all duration-700 delay-300 ${
-              animateForm ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
-            }`}>
-              <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-all duration-500 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-400'
-              } ${email ? 'animate-bounce-gentle' : ''}`} />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-500 focus:scale-105 hover:shadow-lg ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:bg-gray-600' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:bg-gray-50'
-                } ${
-                  email && validateEmail(email) 
-                    ? isDarkMode
-                      ? 'border-green-400 bg-green-900/20 animate-pulse-green'
-                      : 'border-green-300 bg-green-50 animate-pulse-green' 
-                    : email && !validateEmail(email)
-                    ? isDarkMode
-                      ? 'border-red-400 bg-red-900/20 animate-shake-subtle'
-                      : 'border-red-300 bg-red-50 animate-shake-subtle'
-                    : ''
-                }`}
-                required
-              />
-              {email && validateEmail(email) && (
-                <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500 animate-check-success" />
-              )}
-              {email && !validateEmail(email) && (
-                <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 animate-shake-wiggle" />
-              )}
-            </div>
-
-            {/* Email Provider Indicator */}
-            {email && validateEmail(email) && (
-              <div className={`text-xs flex items-center justify-center space-x-2 transition-all duration-500 animate-slide-up ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                {isPopularEmailProvider(email) ? (
-                  <>
-                    <CheckCircle className="w-4 h-4 text-green-500 animate-check-success" />
-                    <span>Recognized email provider: {getEmailDomain(email)}</span>
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-4 h-4 text-blue-500 animate-bounce-gentle" />
-                    <span>Email domain: {getEmailDomain(email)}</span>
-                  </>
-                )}
+            {/* Dark Mode Toggle */}
+            {onToggleDarkMode && (
+              <div className="absolute top-6 right-6">
+                <AnimatedDarkModeToggle
+                  isDarkMode={isDarkMode}
+                  onToggle={onToggleDarkMode}
+                  size="sm"
+                />
               </div>
             )}
-            
-            {/* Password Input */}
-            <div className={`relative transition-all duration-700 delay-400 ${
-              animateForm ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-            }`}>
-              <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-all duration-500 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-400'
-              } ${password ? 'animate-bounce-gentle' : ''}`} />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-500 focus:scale-105 hover:shadow-lg ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400 focus:bg-gray-600' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:bg-gray-50'
-                } ${
-                  password.length >= 6 
-                    ? isDarkMode
-                      ? 'border-green-400 bg-green-900/20 animate-pulse-green'
-                      : 'border-green-300 bg-green-50 animate-pulse-green' 
-                    : password.length > 0
-                    ? isDarkMode
-                      ? 'border-yellow-400 bg-yellow-900/20 animate-pulse-yellow'
-                      : 'border-yellow-300 bg-yellow-50 animate-pulse-yellow'
-                    : ''
-                }`}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className={`absolute right-3 top-1/2 transform -translate-y-1/2 transition-all duration-500 hover:scale-110 hover:rotate-12 ${
-                  isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                {showPassword ? <EyeOff className="w-5 h-5 animate-bounce-gentle" /> : <Eye className="w-5 h-5 animate-bounce-gentle" />}
-              </button>
+
+            {/* Welcome Text */}
+            <div className={`mb-8 transition-all duration-700 delay-200 ${animateForm ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+              }`}>
+              <h1 className={`text-4xl lg:text-5xl font-bold mb-3 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'
+                }`}>
+                {isLoginMode ? 'Welcome Back' : 'Create Account'}
+              </h1>
+              <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                {isLoginMode ? 'Sign in to book your beauty appointment' : 'Create an account to get started'}
+              </p>
             </div>
 
-            {/* Password Strength Indicator */}
-            {password && (
-              <div className={`text-xs transition-all duration-500 animate-slide-up ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                <div className="flex items-center space-x-2">
-                  <div className={`w-full h-1 rounded-full transition-all duration-500 ${
-                    isDarkMode ? 'bg-gray-600' : 'bg-gray-200'
+            {/* Error Message */}
+            {error && (
+              <div className={`mb-6 p-4 rounded-xl flex items-center space-x-3 ${isDarkMode
+                ? 'bg-red-900/30 border border-red-700/50 text-red-300'
+                : 'bg-red-50 border border-red-200 text-red-700'
+                }`}>
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Name Input - Only for Registration */}
+              {!isLoginMode && (
+                <div className={`transition-all duration-700 delay-300 ${animateForm ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
                   }`}>
-                    <div className={`h-1 rounded-full transition-all duration-1000 animate-progress-fill ${
-                      password.length >= 8 ? 'bg-green-500 w-full' :
-                      password.length >= 6 ? 'bg-yellow-500 w-2/3' :
-                      'bg-red-500 w-1/3'
-                    }`}></div>
+                  <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                    Full name
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className={`w-full px-5 py-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-0 ${isDarkMode
+                      ? 'bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-amber-400'
+                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                      }`}
+                  />
+                </div>
+              )}
+
+              {/* Email Input */}
+              <div className={`transition-all duration-700 delay-400 ${animateForm ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+                }`}>
+                <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                  Email
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    className={`w-full px-5 py-4 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-0 ${isDarkMode
+                      ? 'bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-amber-400'
+                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                      } ${email && validateEmail(email)
+                        ? isDarkMode ? 'border-green-400' : 'border-green-500'
+                        : ''
+                      }`}
+                    required
+                  />
+                  {email && validateEmail(email) && (
+                    <CheckCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                  )}
+                </div>
+              </div>
+
+              {/* Password Input */}
+              <div className={`transition-all duration-700 delay-500 ${animateForm ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+                }`}>
+                <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className={`w-full px-5 py-4 pr-14 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-0 ${isDarkMode
+                      ? 'bg-gray-700/50 border-gray-600 text-gray-100 placeholder-gray-400 focus:border-amber-400'
+                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                      }`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all duration-200 hover:scale-110 ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading || !email || !password || !validateEmail(email)}
+                className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-500 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 ${animateForm ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                  } ${isDarkMode
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-gray-900 hover:from-amber-400 hover:to-orange-400 shadow-lg shadow-amber-500/25'
+                    : 'bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 hover:from-amber-500 hover:to-amber-600 shadow-lg shadow-amber-400/30'
+                  }`}
+                style={{ transitionDelay: '600ms' }}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                    <span>{isLoginMode ? 'Signing in...' : 'Creating account...'}</span>
+                  </div>
+                ) : (
+                  isLoginMode ? 'Sign In' : 'Sign Up'
+                )}
+              </button>
+            </form>
+
+            {/* Demo Credentials Info - Only in Login Mode */}
+
+
+            {/* Social Login */}
+            <div className={`mt-6 transition-all duration-700 delay-700 ${animateForm ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}>
+              <div className="flex items-center justify-center mb-4">
+                <div className={`flex-1 h-px ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+                <span className={`px-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>or continue with</span>
+                <div className={`flex-1 h-px ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+              </div>
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={handleGoogleLogin}
+                  disabled={isGoogleLoading}
+                  className={`flex items-center justify-center space-x-3 px-12 py-3 rounded-xl border-2 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${isDarkMode
+                    ? 'border-gray-600 bg-gray-700/50 text-gray-200 hover:border-gray-500'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:shadow-md'
+                    }`}>
+                  {isGoogleLoading ? (
+                    <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                  )}
+                  <span className="font-medium">{isGoogleLoading ? 'Signing in...' : 'Sign in with Google'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Links */}
+            <div className={`mt-10 flex flex-col items-center justify-center space-y-4 text-sm transition-all duration-700 delay-800 ${animateForm ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}>
+
+              {/* Toggle Login/Register */}
+              <div className="flex items-center space-x-2">
+                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
+                  {isLoginMode ? "Don't have an account?" : "Already have an account?"}
+                </span>
+                <button
+                  type="button"
+                  onClick={toggleMode}
+                  className={`font-bold transition-colors ${isDarkMode ? 'text-amber-400 hover:text-amber-300' : 'text-amber-600 hover:text-amber-700'
+                    }`}
+                >
+                  {isLoginMode ? 'Sign Up' : 'Sign In'}
+                </button>
+              </div>
+
+              {isLoginMode && (
+                <div className="flex w-full justify-between px-4">
+                  <button
+                    onClick={onForgotPassword}
+                    className={`hover:underline transition-colors ${isDarkMode ? 'text-gray-400 hover:text-amber-400' : 'text-gray-600 hover:text-amber-600'
+                      }`}
+                  >
+                    Forgot Password?
+                  </button>
+                  <a href="#" className={`hover:underline transition-colors ${isDarkMode ? 'text-gray-400 hover:text-amber-400' : 'text-gray-600 hover:text-amber-600'
+                    }`}>
+                    Terms & Conditions
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side - Image/Visual */}
+          <div className="lg:w-1/2 relative overflow-hidden hidden lg:block">
+            {/* Background Image */}
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974&auto=format&fit=crop')`,
+              }}
+            >
+              <div className={`absolute inset-0 ${isDarkMode
+                ? 'bg-gradient-to-br from-gray-900/60 via-purple-900/40 to-amber-900/40'
+                : 'bg-gradient-to-br from-black/20 via-transparent to-amber-900/20'
+                }`}></div>
+            </div>
+
+            {/* Close Button */}
+            <button className={`absolute top-6 right-6 p-2 rounded-full transition-all duration-300 hover:scale-110 ${isDarkMode
+              ? 'bg-gray-800/80 text-gray-300 hover:bg-gray-700'
+              : 'bg-white/80 text-gray-700 hover:bg-white'
+              } backdrop-blur-sm shadow-lg`}>
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Floating Cards/Info */}
+            <div className="absolute inset-0 p-8 flex flex-col justify-between">
+              {/* Top Card - Service Info */}
+              <div className={`self-start transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                }`}>
+                <div className={`px-5 py-3 rounded-xl backdrop-blur-md shadow-xl ${isDarkMode
+                  ? 'bg-amber-500/90 text-gray-900'
+                  : 'bg-amber-400/90 text-gray-900'
+                  }`}>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                    <span className="font-semibold">Premium Beauty Services</span>
+                  </div>
+                  <p className="text-sm opacity-80 mt-1">Open: 09:00am - 10:00pm</p>
+                </div>
+              </div>
+
+              {/* Bottom Section - Calendar Card */}
+              <div className={`self-end transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                }`}>
+                {/* Mini Calendar */}
+                <div className={`p-4 rounded-2xl backdrop-blur-md shadow-xl mb-4 ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/90'
+                  }`}>
+                  <div className="flex items-center justify-between mb-3">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                      <div key={day} className={`text-xs font-medium px-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {[22, 23, 24, 25, 26, 27, 28].map((date) => (
+                      <div
+                        key={date}
+                        className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${date === 25
+                          ? isDarkMode
+                            ? 'bg-amber-500 text-gray-900'
+                            : 'bg-amber-400 text-gray-900'
+                          : isDarkMode
+                            ? 'text-gray-300 hover:bg-gray-700'
+                            : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                      >
+                        {date}
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <p className="mt-1 animate-bounce-gentle">
-                  {password.length >= 8 ? '✅ Strong password' :
-                   password.length >= 6 ? '⚠️ Good password' :
-                   '❌ Password too short (min 6 characters)'}
-                </p>
-              </div>
-            )}
 
-            {/* Forgot Password Link */}
-            <div className={`text-right transition-all duration-700 delay-500 ${
-              animateForm ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
-            }`}>
-              <button
-                type="button"
-                onClick={onForgotPassword}
-                className="text-sm text-pink-600 hover:text-pink-700 hover:underline transition-all duration-300 hover:scale-105"
-              >
-                Forgot your password?
-              </button>
-            </div>
-
-            {/* Sign In Button */}
-            <button
-              type="submit"
-              disabled={isLoading || !email || !password || !validateEmail(email)}
-              className={`w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:from-pink-700 hover:to-purple-700 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 active:scale-95 hover:shadow-2xl animate-button-glow ${
-                animateForm ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-              }`}
-              style={{ transitionDelay: '600ms' }}
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin-fast rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <Mail className="w-5 h-5 animate-bounce-gentle" />
-                  <span>Sign In</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Auto-Registration Notice */}
-          <div className={`mb-6 p-4 border rounded-xl transition-all duration-1000 delay-700 ${
-            isDarkMode 
-              ? 'bg-blue-900/50 border-blue-700' 
-              : 'bg-blue-50 border-blue-200'
-          } ${animateFeatures ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <CheckCircle className="w-5 h-5 text-blue-600 animate-check-success" />
-              <span className={`text-sm font-medium transition-colors duration-500 ${
-                isDarkMode ? 'text-blue-300' : 'text-blue-800'
-              }`}>
-                <span className="animate-bounce-gentle">New User? 🎉</span>
-              </span>
-            </div>
-            <p className={`text-xs transition-colors duration-500 ${
-              isDarkMode ? 'text-blue-400' : 'text-blue-600'
-            }`}>
-              Don't worry! We'll automatically create your account when you sign in for the first time.
-            </p>
-          </div>
-
-          {/* Security Notice */}
-          <div className={`mb-6 p-4 rounded-xl border transition-all duration-1000 delay-800 ${
-            isDarkMode 
-              ? 'bg-green-900/50 border-green-700' 
-              : 'bg-green-50 border-green-200'
-          } ${animateFeatures ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-            <div className="flex items-center justify-center space-x-2 mb-2">
-              <Shield className="w-5 h-5 text-green-600 animate-shield-glow" />
-              <span className={`text-sm font-medium transition-colors duration-500 ${
-                isDarkMode ? 'text-green-300' : 'text-green-800'
-              }`}>
-                <span className="animate-bounce-gentle">Secure & Private 🔒</span>
-              </span>
-            </div>
-            <p className={`text-xs transition-colors duration-500 ${
-              isDarkMode ? 'text-green-400' : 'text-green-600'
-            }`}>
-              Your email and data are securely stored and never shared with third parties
-            </p>
-          </div>
-
-          {/* Features with staggered animations */}
-          <div className={`pt-6 border-t transition-all duration-500 ${
-            isDarkMode ? 'border-gray-700' : 'border-gray-100'
-          }`}>
-            <div className={`grid grid-cols-2 gap-4 text-sm transition-colors duration-500 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              {[
-                { icon: Clock, text: 'Quick Booking', color: 'text-pink-500', delay: '900ms', animation: 'animate-bounce-gentle' },
-                { icon: Users, text: 'Expert Stylists', color: 'text-purple-500', delay: '1000ms', animation: 'animate-pulse-slow' },
-                { icon: Shield, text: 'Secure Payment', color: 'text-indigo-500', delay: '1100ms', animation: 'animate-shield-glow' },
-                { icon: Award, text: 'Premium Care', color: 'text-pink-500', delay: '1200ms', animation: 'animate-twinkle' }
-              ].map((feature, index) => (
-                <div 
-                  key={index}
-                  className={`flex items-center space-x-2 transition-all duration-700 hover:scale-110 hover:rotate-1 ${
-                    animateFeatures ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-                  }`}
-                  style={{ transitionDelay: feature.delay }}
-                >
-                  <feature.icon className={`w-4 h-4 ${feature.color} ${feature.animation}`} />
-                  <span>{feature.text}</span>
+                {/* Appointment Card */}
+                <div className={`p-4 rounded-2xl backdrop-blur-md shadow-xl ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/90'
+                  }`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className={`font-semibold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                        Your Appointment
+                      </h4>
+                      <p className={`text-sm ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                        12:00pm - 01:00pm
+                      </p>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full ${isDarkMode ? 'bg-amber-400' : 'bg-amber-500'}`}></div>
+                  </div>
+                  <div className="flex items-center mt-3 -space-x-2">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className={`w-8 h-8 rounded-full border-2 ${isDarkMode ? 'border-gray-800 bg-gradient-to-br from-pink-400 to-purple-400' : 'border-white bg-gradient-to-br from-pink-300 to-purple-300'
+                          }`}
+                      ></div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
 
-          {/* Privacy Notice */}
-          <div className={`mt-6 text-xs transition-all duration-1000 delay-1300 ${
-            isDarkMode ? 'text-gray-500' : 'text-gray-500'
-          } ${animateFeatures ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-            <p>
-              By signing in, you agree to our{' '}
-              <a href="#" className="text-pink-600 hover:underline transition-colors duration-300">Terms of Service</a>
-              {' '}and{' '}
-              <a href="#" className="text-pink-600 hover:underline transition-colors duration-300">Privacy Policy</a>
-            </p>
+            {/* Floating Profile Avatars */}
+            <div className={`absolute top-1/3 right-8 transition-all duration-1000 delay-600 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-8 opacity-0'
+              }`}>
+              <div className="flex flex-col space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-12 h-12 rounded-full border-3 shadow-lg ${isDarkMode
+                      ? 'border-gray-700 bg-gradient-to-br from-amber-400 to-orange-400'
+                      : 'border-white bg-gradient-to-br from-pink-400 to-purple-400'
+                      }`}
+                    style={{ animationDelay: `${i * 200}ms` }}
+                  ></div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <style jsx global>{`
-        @keyframes shake-wiggle {
-          0%, 100% { transform: translateX(0); }
-          10% { transform: translateX(-2px) rotate(-1deg); }
-          20% { transform: translateX(2px) rotate(1deg); }
-          30% { transform: translateX(-2px) rotate(-1deg); }
-          40% { transform: translateX(2px) rotate(1deg); }
-          50% { transform: translateX(-1px) rotate(-0.5deg); }
-          60% { transform: translateX(1px) rotate(0.5deg); }
-        }
-        
-        @keyframes shake-subtle {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-1px); }
-          75% { transform: translateX(1px); }
-        }
-        
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-15px) rotate(-3deg); }
-        }
-        
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-10px) scale(1.05); }
-        }
-        
-        @keyframes bounce-gentle {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-3px); }
-        }
-        
-        @keyframes twinkle {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.3; transform: scale(0.8); }
-        }
-        
-        @keyframes heartbeat {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
-        }
-        
-        @keyframes wave {
-          0%, 100% { transform: rotate(0deg); }
-          25% { transform: rotate(20deg); }
-          75% { transform: rotate(-10deg); }
-        }
-        
-        @keyframes logo-bounce {
-          0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-          50% { transform: translateY(-5px) rotate(5deg) scale(1.05); }
-        }
-        
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        @keyframes spin-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
-        }
-        
-        @keyframes spin-fast {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        @keyframes text-shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        
-        @keyframes check-success {
-          0% { transform: scale(0) rotate(0deg); }
-          50% { transform: scale(1.2) rotate(180deg); }
-          100% { transform: scale(1) rotate(360deg); }
-        }
-        
-        @keyframes pulse-green {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-          50% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-        }
-        
-        @keyframes pulse-yellow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4); }
-          50% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
-        }
-        
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.05); }
-        }
-        
-        @keyframes progress-fill {
-          from { width: 0%; }
-          to { width: var(--progress-width, 100%); }
-        }
-        
-        @keyframes button-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.3); }
-          50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.6); }
-        }
-        
-        @keyframes shield-glow {
-          0%, 100% { filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.5)); }
-          50% { filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.8)); }
-        }
-        
-        .animate-shake-wiggle {
-          animation: shake-wiggle 0.6s ease-in-out;
-        }
-        
-        .animate-shake-subtle {
-          animation: shake-subtle 0.3s ease-in-out;
-        }
-        
-        .animate-slide-up {
-          animation: slide-up 0.5s ease-out;
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        .animate-float-delayed {
-          animation: float-delayed 8s ease-in-out infinite;
-        }
-        
-        .animate-bounce-slow {
-          animation: bounce-slow 4s ease-in-out infinite;
-        }
-        
-        .animate-bounce-gentle {
-          animation: bounce-gentle 2s ease-in-out infinite;
-        }
-        
-        .animate-twinkle {
-          animation: twinkle 2s ease-in-out infinite;
-        }
-        
-        .animate-heartbeat {
-          animation: heartbeat 1.5s ease-in-out infinite;
-        }
-        
-        .animate-wave {
-          animation: wave 2s ease-in-out infinite;
-        }
-        
-        .animate-logo-bounce {
-          animation: logo-bounce 3s ease-in-out infinite;
-        }
-        
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-        
-        .animate-spin-reverse {
-          animation: spin-reverse 10s linear infinite;
-        }
-        
-        .animate-spin-fast {
-          animation: spin-fast 1s linear infinite;
-        }
-        
-        .animate-text-shimmer {
-          background: linear-gradient(90deg, #ec4899, #8b5cf6, #6366f1, #ec4899);
-          background-size: 200% auto;
-          animation: text-shimmer 3s linear infinite;
-          -webkit-background-clip: text;
-          background-clip: text;
-        }
-        
-        .animate-check-success {
-          animation: check-success 0.6s ease-out;
-        }
-        
-        .animate-pulse-green {
-          animation: pulse-green 2s infinite;
-        }
-        
-        .animate-pulse-yellow {
-          animation: pulse-yellow 2s infinite;
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-        
-        .animate-progress-fill {
-          animation: progress-fill 1s ease-out;
-        }
-        
-        .animate-button-glow {
-          animation: button-glow 2s ease-in-out infinite;
-        }
-        
-        .animate-shield-glow {
-          animation: shield-glow 2s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 };

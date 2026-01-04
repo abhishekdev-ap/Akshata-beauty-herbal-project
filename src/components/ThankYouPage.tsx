@@ -3,6 +3,7 @@ import { CheckCircle, Calendar, Home } from 'lucide-react';
 
 interface ThankYouPageProps {
   onBackToHome: () => void;
+  isDarkMode?: boolean;
 }
 
 const ThankYouPage: React.FC<ThankYouPageProps> = ({ onBackToHome }) => {
@@ -20,12 +21,12 @@ const ThankYouPage: React.FC<ThankYouPageProps> = ({ onBackToHome }) => {
         <div className="p-8">
           <div className="mb-8">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              We appreciate your time at Akshata Parlor
+              We appreciate your time at Akshata Beauty Herbal Parlour
             </h3>
             <p className="text-gray-600 mb-6">
               Your review helps us maintain our high standards and serve you better in the future.
             </p>
-            
+
             <div className="bg-pink-50 rounded-xl p-6 mb-6">
               <h4 className="font-semibold text-pink-800 mb-3">What's Next?</h4>
               <ul className="text-sm text-pink-700 space-y-2 text-left">
@@ -46,7 +47,7 @@ const ThankYouPage: React.FC<ThankYouPageProps> = ({ onBackToHome }) => {
               <Home className="w-5 h-5" />
               <span>Book Another Appointment</span>
             </button>
-            
+
             <button
               onClick={onBackToHome}
               className="w-full bg-white border-2 border-pink-200 text-pink-600 py-3 rounded-xl font-semibold hover:bg-pink-50 transition-all duration-300 flex items-center justify-center space-x-2"

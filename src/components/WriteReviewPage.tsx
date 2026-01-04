@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Star, Send, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Star, Send, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Review } from '../types';
 
 interface WriteReviewPageProps {
   onBack: () => void;
   onReviewSubmit: (review: Review) => void;
   userId?: string;
+  isDarkMode?: boolean;
 }
 
 const WriteReviewPage: React.FC<WriteReviewPageProps> = ({ onBack, onReviewSubmit, userId }) => {
@@ -131,7 +132,7 @@ const WriteReviewPage: React.FC<WriteReviewPageProps> = ({ onBack, onReviewSubmi
             <span>Back</span>
           </button>
           <h2 className="text-2xl font-bold mb-2">Write a Review</h2>
-          <p className="opacity-90">Share your experience at AKSHATA PARLOR</p>
+          <p className="opacity-90">Share your experience at AKSHATA PARLOUR</p>
         </div>
 
         {/* Form */}
@@ -142,13 +143,13 @@ const WriteReviewPage: React.FC<WriteReviewPageProps> = ({ onBack, onReviewSubmi
               Your Name *
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Enter your full name"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 required
               />
             </div>
@@ -159,7 +160,7 @@ const WriteReviewPage: React.FC<WriteReviewPageProps> = ({ onBack, onReviewSubmi
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Services You Used (Optional)
             </label>
-            
+
             {/* Selected Services */}
             {services.length > 0 && (
               <div className="mb-3">
@@ -222,11 +223,10 @@ const WriteReviewPage: React.FC<WriteReviewPageProps> = ({ onBack, onReviewSubmi
                     className="transition-all duration-200 hover:scale-110 focus:outline-none"
                   >
                     <Star
-                      className={`w-12 h-12 ${
-                        star <= (hoveredRating || rating)
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300 hover:text-yellow-200'
-                      }`}
+                      className={`w-12 h-12 ${star <= (hoveredRating || rating)
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-300 hover:text-yellow-200'
+                        }`}
                     />
                   </button>
                 ))}
@@ -245,7 +245,7 @@ const WriteReviewPage: React.FC<WriteReviewPageProps> = ({ onBack, onReviewSubmi
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell us about your experience at Akshata Parlor. What did you like? How was the service? Would you recommend us to others?"
+              placeholder="Tell us about your experience at Akshata Beauty Herbal Parlour. What did you like? How was the service? Would you recommend us to others?"
               rows={5}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
               required

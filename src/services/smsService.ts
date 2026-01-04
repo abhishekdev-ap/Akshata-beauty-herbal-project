@@ -68,7 +68,7 @@ ${servicesList}
 
 Please confirm the appointment with the customer.
 
-- AKSHATA PARLOR System`;
+- AKSHATA BEAUTY HERBAL PARLOUR System`;
 
     return {
       to: this.akshataNumber,
@@ -84,7 +84,7 @@ Please confirm the appointment with the customer.
       day: 'numeric'
     });
 
-    const message = `✨ AKSHATA PARLOR - Booking Confirmed! ✨
+    const message = `✨ AKSHATA BEAUTY HERBAL PARLOUR - Booking Confirmed! ✨
 
 Hi ${data.customerName}!
 
@@ -97,7 +97,7 @@ Your appointment is confirmed:
 
 We'll call you 1 day before to confirm. For any changes, call +91 98765 43210.
 
-Thank you for choosing AKSHATA PARLOR! 💖`;
+Thank you for choosing AKSHATA BEAUTY HERBAL PARLOUR! 💖`;
 
     return {
       to: data.customerPhone ? `+91${data.customerPhone}` : '',
@@ -117,7 +117,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
 
       if (result.success) {
         console.log('✅ Appointment notification sent successfully to Akshata:', this.akshataNumber);
-        
+
         // Also send confirmation to customer if phone number is available
         if (appointmentData.customerPhone) {
           await this.sendCustomerConfirmation(appointmentData);
@@ -131,9 +131,9 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
 
     } catch (error) {
       console.error('❌ SMS service error:', error);
-      return { 
-        success: false, 
-        error: 'Failed to send SMS notification. Please contact Akshata directly.' 
+      return {
+        success: false,
+        error: 'Failed to send SMS notification. Please contact Akshata directly.'
       };
     }
   }
@@ -166,7 +166,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
   async sendSMSWithFallback(smsTemplate: SMSTemplate): Promise<{ success: boolean; error?: string }> {
     try {
       // Try multiple SMS providers for reliability
-      
+
       // 1. Try TextLocal (Primary - Indian SMS service)
       console.log('🔄 Attempting to send SMS via TextLocal...');
       const textLocalResult = await this.sendWithTextLocal(smsTemplate);
@@ -202,10 +202,10 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
       // 5. Final fallback - Log for manual processing
       console.error('❌ All SMS providers failed, logging for manual processing');
       this.logForManualProcessing(smsTemplate);
-      
-      return { 
-        success: false, 
-        error: 'All SMS providers failed. Message logged for manual processing.' 
+
+      return {
+        success: false,
+        error: 'All SMS providers failed. Message logged for manual processing.'
       };
 
     } catch (error) {
@@ -219,7 +219,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
     try {
       // Remove +91 prefix for TextLocal API
       const phoneNumber = smsTemplate.to.replace('+91', '');
-      
+
       const formData = new FormData();
       formData.append('apikey', this.config.apiKey);
       formData.append('numbers', `91${phoneNumber}`);
@@ -245,15 +245,16 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
         return { success: true };
       } else {
         console.error('❌ TextLocal SMS failed:', result);
-        return { 
-          success: false, 
-          error: result.errors?.[0]?.message || 'TextLocal SMS sending failed' 
+        return {
+          success: false,
+          error: result.errors?.[0]?.message || 'TextLocal SMS sending failed'
         };
       }
 
     } catch (error) {
       console.error('❌ TextLocal SMS error:', error);
-      return { success: false, error: `TextLocal error: ${error.message}` };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: `TextLocal error: ${errorMessage}` };
     }
   }
 
@@ -269,7 +270,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
       }
 
       const credentials = btoa(`${accountSid}:${authToken}`);
-      
+
       const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
         method: 'POST',
         headers: {
@@ -295,7 +296,8 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
 
     } catch (error) {
       console.error('❌ Twilio SMS error:', error);
-      return { success: false, error: `Twilio error: ${error.message}` };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: `Twilio error: ${errorMessage}` };
     }
   }
 
@@ -304,9 +306,9 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
     try {
       // AWS SNS requires AWS SDK or direct API calls
       // For browser environment, we'll use a serverless function or API gateway
-      
+
       const awsApiEndpoint = import.meta.env.VITE_AWS_SMS_ENDPOINT;
-      
+
       if (!awsApiEndpoint) {
         return { success: false, error: 'AWS SMS endpoint not configured' };
       }
@@ -336,7 +338,8 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
 
     } catch (error) {
       console.error('❌ AWS SNS SMS error:', error);
-      return { success: false, error: `AWS SNS error: ${error.message}` };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: `AWS SNS error: ${errorMessage}` };
     }
   }
 
@@ -344,7 +347,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
   private async sendWithWebhook(smsTemplate: SMSTemplate): Promise<{ success: boolean; error?: string }> {
     try {
       const webhookUrl = import.meta.env.VITE_SMS_WEBHOOK_URL || 'https://hooks.zapier.com/hooks/catch/your-webhook-id/';
-      
+
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -354,7 +357,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
           to: smsTemplate.to,
           message: smsTemplate.message,
           timestamp: new Date().toISOString(),
-          source: 'AKSHATA_PARLOR_BOOKING'
+          source: 'AKSHATA_PARLOUR_BOOKING'
         })
       });
 
@@ -368,7 +371,8 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
 
     } catch (error) {
       console.error('❌ Webhook SMS error:', error);
-      return { success: false, error: `Webhook error: ${error.message}` };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: `Webhook error: ${errorMessage}` };
     }
   }
 
@@ -392,7 +396,7 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
     console.error('📱 Phone:', smsTemplate.to);
     console.error('💬 Message:', smsTemplate.message);
     console.error('⏰ Time:', new Date().toLocaleString());
-    
+
     // Show alert to user
     alert(`⚠️ SMS notification failed to send automatically.\n\n📱 Please manually notify Akshata at ${this.akshataNumber}\n\n💬 Message: New appointment booking received!`);
   }
@@ -400,10 +404,10 @@ Thank you for choosing AKSHATA PARLOR! 💖`;
   // Send payment confirmation SMS
   async sendPaymentConfirmation(appointmentData: AppointmentSMSData, paymentMethod: string, paymentId?: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const paymentMethodName = paymentMethod === 'upi' ? 'UPI Payment' : 
-                               paymentMethod === 'card' ? 'Card Payment' : 'Cash Payment';
+      const paymentMethodName = paymentMethod === 'upi' ? 'UPI Payment' :
+        paymentMethod === 'card' ? 'Card Payment' : 'Cash Payment';
 
-      const paymentMessage = `💰 PAYMENT RECEIVED - AKSHATA PARLOR
+      const paymentMessage = `💰 PAYMENT RECEIVED - AKSHATA BEAUTY HERBAL PARLOUR
 
 Customer: ${appointmentData.customerName}
 Email: ${appointmentData.customerEmail}
@@ -419,7 +423,7 @@ ${paymentId ? `🆔 Payment ID: ${paymentId}` : ''}
 
 ✅ Payment confirmed and appointment secured!
 
-- AKSHATA PARLOR System`;
+- AKSHATA BEAUTY HERBAL PARLOUR System`;
 
       const smsTemplate: SMSTemplate = {
         to: this.akshataNumber,
@@ -438,21 +442,21 @@ ${paymentId ? `🆔 Payment ID: ${paymentId}` : ''}
   async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('🧪 Testing SMS service connection to Akshata...');
-      
+
       const testMessage: SMSTemplate = {
         to: this.akshataNumber,
         message: `🧪 TEST MESSAGE - ${new Date().toLocaleString()}
 
-This is a test message from AKSHATA PARLOR booking system.
+This is a test message from AKSHATA BEAUTY HERBAL PARLOUR booking system.
 
 ✅ SMS service is working correctly!
 📱 Real-time notifications are active.
 
-- AKSHATA PARLOR System`
+- AKSHATA BEAUTY HERBAL PARLOUR System`
       };
 
       const result = await this.sendSMSWithFallback(testMessage);
-      
+
       if (result.success) {
         console.log('✅ SMS service test successful - Akshata should receive the test message');
         return { success: true };

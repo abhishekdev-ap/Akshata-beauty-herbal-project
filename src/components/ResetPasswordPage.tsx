@@ -10,10 +10,10 @@ interface ResetPasswordPageProps {
   isDarkMode?: boolean;
 }
 
-const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ 
-  email, 
+const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
+  email,
   token,
-  onPasswordReset, 
+  onPasswordReset,
   onBack,
   isDarkMode = false
 }) => {
@@ -94,9 +94,9 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
 
     try {
       console.log('🔄 Attempting to reset password with token:', token);
-      
+
       const result = await authService.resetPassword(token, passwords.newPassword);
-      
+
       if (result.success) {
         console.log('✅ Password reset successful');
         onPasswordReset();
@@ -122,7 +122,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-full mb-4 shadow-lg">
               <AlertCircle className="w-8 h-8 text-white" />
             </div>
-            
+
             <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2 transition-colors duration-300`}>Invalid Reset Link</h1>
             <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-6 transition-colors duration-300`}>
               This password reset link is invalid or has expired. Please request a new one.
@@ -158,7 +158,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full mb-4 shadow-lg transition-transform duration-300 hover:scale-105">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            
+
             <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2 transition-colors duration-300`}>Reset Password</h1>
             <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2 transition-colors duration-300`}>Create a new password for your account</p>
             {tokenInfo && (
@@ -205,11 +205,10 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                   value={passwords.newPassword}
                   onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
                   placeholder="Enter new password"
-                  className={`w-full pl-10 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400' 
+                  className={`w-full pl-10 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 ${isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400'
                       : 'bg-white border-gray-300 text-gray-900'
-                  }`}
+                    }`}
                   required
                 />
                 <button
@@ -227,21 +226,19 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                   <div className="flex items-center space-x-2 mb-1">
                     <div className={`flex-1 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 transition-colors duration-300`}>
                       <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          passwordStrength.color === 'red' ? 'bg-red-500' :
-                          passwordStrength.color === 'yellow' ? 'bg-yellow-500' :
-                          passwordStrength.color === 'blue' ? 'bg-blue-500' :
-                          'bg-green-500'
-                        }`}
+                        className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color === 'red' ? 'bg-red-500' :
+                            passwordStrength.color === 'yellow' ? 'bg-yellow-500' :
+                              passwordStrength.color === 'blue' ? 'bg-blue-500' :
+                                'bg-green-500'
+                          }`}
                         style={{ width: `${passwordStrength.percentage}%` }}
                       ></div>
                     </div>
-                    <span className={`text-xs font-medium transition-colors duration-300 ${
-                      passwordStrength.color === 'red' ? 'text-red-600' :
-                      passwordStrength.color === 'yellow' ? 'text-yellow-600' :
-                      passwordStrength.color === 'blue' ? 'text-blue-600' :
-                      'text-green-600'
-                    }`}>
+                    <span className={`text-xs font-medium transition-colors duration-300 ${passwordStrength.color === 'red' ? 'text-red-600' :
+                        passwordStrength.color === 'yellow' ? 'text-yellow-600' :
+                          passwordStrength.color === 'blue' ? 'text-blue-600' :
+                            'text-green-600'
+                      }`}>
                       {passwordStrength.strength}
                     </span>
                   </div>
@@ -264,17 +261,15 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
                   value={passwords.confirmPassword}
                   onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                   placeholder="Confirm new password"
-                  className={`w-full pl-10 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 ${
-                    isDarkMode 
-                      ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400' 
-                      : 'bg-white border-gray-300 text-gray-900'
-                  } ${
-                    passwords.confirmPassword && passwords.newPassword === passwords.confirmPassword
-                      ? 'border-green-300 bg-green-50'
+                  className={`w-full pl-10 pr-12 py-4 border rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 ${isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    } ${passwords.confirmPassword && passwords.newPassword === passwords.confirmPassword
+                      ? 'border-green-500'
                       : passwords.confirmPassword && passwords.newPassword !== passwords.confirmPassword
-                      ? 'border-red-300 bg-red-50'
-                      : ''
-                  }`}
+                        ? 'border-red-500'
+                        : ''
+                    }`}
                   required
                 />
                 <button
@@ -307,9 +302,9 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({
             <button
               type="submit"
               disabled={
-                isLoading || 
-                !passwords.newPassword || 
-                !passwords.confirmPassword || 
+                isLoading ||
+                !passwords.newPassword ||
+                !passwords.confirmPassword ||
                 passwords.newPassword !== passwords.confirmPassword ||
                 !validatePassword(passwords.newPassword)
               }

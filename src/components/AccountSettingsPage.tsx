@@ -1,42 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Bell, 
-  Shield, 
-  Palette, 
-  Globe, 
-  Trash2, 
-  Save, 
-  ArrowLeft, 
-  Eye, 
-  EyeOff, 
-  CheckCircle, 
-  AlertCircle,
+import {
+  User,
+  Mail,
+  Lock,
+  Bell,
+  Shield,
+  Palette,
+  Globe,
+  Trash2,
+  Save,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  CheckCircle,
   Camera,
   Phone,
   MapPin,
   Calendar,
-  Clock,
   Settings,
   Moon,
   Sun,
   Smartphone
 } from 'lucide-react';
 import { User as UserType } from '../types';
-import AuthService from '../services/authService';
 
 interface AccountSettingsPageProps {
   user: UserType;
   onBack: () => void;
   onUserUpdate: (updatedUser: UserType) => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
-const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({ 
-  user, 
-  onBack, 
-  onUserUpdate 
+const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
+  user,
+  onBack,
+  onUserUpdate
 }) => {
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences' | 'notifications'>('profile');
   const [isLoading, setIsLoading] = useState(false);
@@ -87,11 +86,9 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
     weeklyNewsletter: false
   });
 
-  const authService = AuthService.getInstance();
-
   // Check for changes
   useEffect(() => {
-    const profileChanged = 
+    const profileChanged =
       profileData.name !== user.name ||
       profileData.email !== user.email ||
       profileData.phone !== '' ||
@@ -99,7 +96,7 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
       profileData.dateOfBirth !== '' ||
       profileData.bio !== '';
 
-    const securityChanged = 
+    const securityChanged =
       securityData.currentPassword !== '' ||
       securityData.newPassword !== '' ||
       securityData.confirmPassword !== '';
@@ -229,12 +226,12 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
       'from-indigo-500 to-purple-500',
       'from-teal-500 to-green-500'
     ];
-    
+
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
-    
+
     return colors[Math.abs(hash) % colors.length];
   };
 
@@ -319,11 +316,10 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-pink-50 text-pink-600 border-2 border-pink-200'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-                    }`}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all ${activeTab === tab.id
+                      ? 'bg-pink-50 text-pink-600 border-2 border-pink-200'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                      }`}
                   >
                     <Icon className="w-5 h-5" />
                     <span>{tab.label}</span>
@@ -341,7 +337,7 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
             {activeTab === 'profile' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile Information</h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div>
@@ -451,12 +447,12 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
             {activeTab === 'security' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Security Settings</h2>
-                
+
                 <div className="space-y-6">
                   {/* Change Password Section */}
                   <div className="bg-gray-50 rounded-xl p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Change Password</h3>
-                    
+
                     <div className="space-y-4">
                       {/* Current Password */}
                       <div>
@@ -585,7 +581,7 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
             {activeTab === 'preferences' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Preferences</h2>
-                
+
                 <div className="space-y-6">
                   {/* Appearance */}
                   <div className="bg-gray-50 rounded-xl p-6">
@@ -599,22 +595,20 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
                         <div className="flex space-x-4">
                           <button
                             onClick={() => handlePreferenceChange('theme', 'light')}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                              preferences.theme === 'light'
-                                ? 'border-pink-500 bg-pink-50 text-pink-700'
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${preferences.theme === 'light'
+                              ? 'border-pink-500 bg-pink-50 text-pink-700'
+                              : 'border-gray-300 hover:border-gray-400'
+                              }`}
                           >
                             <Sun className="w-4 h-4" />
                             <span>Light</span>
                           </button>
                           <button
                             onClick={() => handlePreferenceChange('theme', 'dark')}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                              preferences.theme === 'dark'
-                                ? 'border-pink-500 bg-pink-50 text-pink-700'
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${preferences.theme === 'dark'
+                              ? 'border-pink-500 bg-pink-50 text-pink-700'
+                              : 'border-gray-300 hover:border-gray-400'
+                              }`}
                           >
                             <Moon className="w-4 h-4" />
                             <span>Dark</span>
@@ -744,7 +738,7 @@ const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
             {activeTab === 'notifications' && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Notification Settings</h2>
-                
+
                 <div className="space-y-6">
                   {/* Email Notifications */}
                   <div className="bg-blue-50 rounded-xl p-6">

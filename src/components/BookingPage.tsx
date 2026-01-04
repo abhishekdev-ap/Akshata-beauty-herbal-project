@@ -1,19 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, ShoppingBag, ArrowRight, MessageSquare, Phone } from 'lucide-react';
+import { Calendar, Clock, ShoppingBag, ArrowRight, ArrowLeft, MessageSquare, Phone, Home, MapPin, Building2 } from 'lucide-react';
 import { Service, Appointment } from '../types';
-import { allServices } from '../data/services';
+import ServiceStore from '../services/serviceStore';
+import BusinessStore from '../services/businessStore';
 import ServiceCard from './ServiceCard';
-import SMSService from '../services/smsService';
+import EmailService from '../services/emailService';
 import TabSoundService from '../services/tabSoundService';
 
 interface BookingPageProps {
   onBookingComplete: (appointment: Appointment) => void;
   onViewReviews: () => void;
+  onGoHome: () => void;
   userId: string;
   isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
-const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewReviews, userId, isDarkMode = false }) => {
+const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewReviews, onGoHome, userId, isDarkMode = false, onToggleDarkMode }) => {
+  // ... existing state ... (skipping for brevity in replace, but need to be careful with range)
+  // I will target specific blocks to avoid huge replacement context
+
+  // ...
+
+
+
   const [selectedServices, setSelectedServices] = useState<{ [key: string]: number }>({});
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
@@ -25,15 +35,27 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   const [animateSummary, setAnimateSummary] = useState(false);
   const [isTabSwitching, setIsTabSwitching] = useState(false);
   const [tabSwitchDirection, setTabSwitchDirection] = useState<'left' | 'right'>('right');
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [serviceLocation, setServiceLocation] = useState<'parlor' | 'home'>('parlor');
+  const [customerAddress, setCustomerAddress] = useState('');
 
   const headerRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
 
+  const serviceStore = ServiceStore.getInstance();
+  const businessStore = BusinessStore.getInstance();
   const regularServices = allServices.filter(s => s.category === 'regular');
   const bridalServices = allServices.filter(s => s.category === 'bridal');
-  const smsService = SMSService.getInstance();
+
   const tabSoundService = TabSoundService.getInstance();
+  const homeServiceEnabled = businessStore.isHomeServiceEnabled();
+  const homeServiceCharge = businessStore.getHomeServiceCharge();
+
+  // Load services from ServiceStore
+  useEffect(() => {
+    setAllServices(serviceStore.getServices());
+  }, []);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -89,15 +111,15 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
     // Determine animation direction
     const direction = (activeTab === 'regular' && newTab === 'bridal') ? 'right' : 'left';
     setTabSwitchDirection(direction);
-    
+
     // Start switching animation
     setIsTabSwitching(true);
-    
+
     // Change tab after a short delay for smooth transition
     setTimeout(() => {
       setActiveTab(newTab);
     }, 150);
-    
+
     // End switching animation
     setTimeout(() => {
       setIsTabSwitching(false);
@@ -120,7 +142,9 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   };
 
   const getTotalPrice = () => {
-    return getSelectedServicesList().reduce((total, service) => total + service.price, 0);
+    const basePrice = getSelectedServicesList().reduce((total, service) => total + service.price, 0);
+    // Add home service charge if home visit is selected
+    return serviceLocation === 'home' ? basePrice + homeServiceCharge : basePrice;
   };
 
   const getTotalDuration = () => {
@@ -143,16 +167,19 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
         date: selectedDate,
         time: selectedTime,
         totalPrice: getTotalPrice(),
-        status: 'pending'
+        status: 'pending',
+        serviceLocation,
+        customerAddress: serviceLocation === 'home' ? customerAddress : undefined,
+        customerPhone: customerPhone || undefined
       };
 
       // Get user data from localStorage or context (simplified for demo)
-      const userData = JSON.parse(localStorage.getItem('akshata_users') || '{}');
+      const userData = JSON.parse(localStorage.getItem('akshata_users') || '{ }');
       const userEmail = Object.keys(userData)[0] || 'customer@example.com';
       const userName = userData[userEmail]?.name || 'Customer';
 
-      // Prepare SMS data for REAL-TIME notification to Akshata
-      const smsData = {
+      // Prepare email data for notification to Akshata
+      const emailData = {
         customerName: userName,
         customerEmail: userEmail,
         customerPhone: customerPhone || undefined,
@@ -160,27 +187,26 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
         appointmentDate: selectedDate,
         appointmentTime: selectedTime,
         totalAmount: getTotalPrice(),
-        appointmentId: appointment.id
+        appointmentId: appointment.id,
+        serviceLocation,
+        customerAddress: serviceLocation === 'home' ? customerAddress : undefined
       };
 
-      console.log('📱 Sending REAL-TIME SMS notification to Akshata at +919740303404...');
+      console.log('📧 Sending appointment email notification to akshatapattanashetti968@gmail.com...');
 
-      // Send REAL-TIME SMS notification to Akshata's number
-      const smsResult = await smsService.sendAppointmentNotification(smsData);
+      // Send email notification to Akshata
+      const emailService = EmailService.getInstance();
+      const emailResult = await emailService.sendAppointmentNotificationEmail(emailData);
 
-      if (smsResult.success) {
-        console.log('✅ REAL-TIME SMS notification sent successfully to Akshata at +919740303404');
-        
-        // Show success message to user
+      if (emailResult.success) {
+        console.log('✅ Email notification sent successfully to akshatapattanashetti968@gmail.com');
         setTimeout(() => {
-          alert(`✅ Appointment booked successfully!\n\n📱 Akshata has been notified INSTANTLY at +919740303404\n\n🎉 You will receive a confirmation call soon!`);
+          alert(`✅ Appointment booked successfully!\n\n📧 Email notification sent to Akshata\n\n🎉 You will receive a confirmation call soon!`);
         }, 500);
       } else {
-        console.error('❌ Failed to send REAL-TIME SMS notification:', smsResult.error);
-        
-        // Still proceed with booking but inform user
+        console.error('❌ Failed to send email notification:', emailResult.error);
         setTimeout(() => {
-          alert(`✅ Appointment booked successfully!\n\n⚠️ SMS notification failed. Please call Akshata directly at +919740303404 to confirm your appointment.\n\nBooking ID: ${appointment.id}`);
+          alert(`✅ Appointment booked successfully!\n\n⚠️ Email notification failed. Please call Akshata directly at +919740303404 to confirm your appointment.\n\nBooking ID: ${appointment.id}`);
         }, 500);
       }
 
@@ -202,89 +228,87 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Animated Header */}
-      <div 
+    <div className={`max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Header - Mobile Optimized */}
+      <div
         ref={headerRef}
-        className={`mb-8 flex justify-between items-center transform transition-all duration-1000 ease-out ${
-          isVisible 
-            ? 'translate-y-0 opacity-100' 
-            : 'translate-y-8 opacity-0'
-        }`}
+        className={`mb-6 transform transition-all duration-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
       >
-        <div className="relative">
-          {/* Animated background gradient */}
-          <div className={`absolute -inset-4 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-indigo-500/20 rounded-2xl blur-xl transition-all duration-1000 ${
-            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}></div>
-          
-          <div className="relative">
-            <h2 className={`text-3xl font-bold mb-2 transition-all duration-1000 delay-100 ${
-              isDarkMode ? 'text-gray-100' : 'text-gray-800'
-            } ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
-              <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-pulse">
-                ✨ Book Your Appointment ✨
-              </span>
-            </h2>
-            <p className={`transition-all duration-1000 delay-200 ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-600'
-            } ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
-              Choose your services and preferred time
-            </p>
+        {/* Top Row - Home button and View Reviews */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-3">
+            {/* Back to Home Button - Compact */}
+            <button
+              onClick={onGoHome}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isDarkMode
+                ? 'bg-gray-800 text-gray-300 hover:text-pink-400'
+                : 'bg-white text-gray-600 hover:text-pink-600 shadow-sm'
+                }`}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <Home className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* View Reviews Button - Compact */}
+            <button
+              onClick={onViewReviews}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all border ${isDarkMode
+                ? 'border-pink-500/50 text-pink-400 hover:bg-pink-500/10'
+                : 'border-pink-200 text-pink-600 hover:bg-pink-50'
+                }`}
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>View Reviews</span>
+            </button>
           </div>
         </div>
-        
-        <button
-          onClick={onViewReviews}
-          className={`border-2 px-6 py-3 rounded-xl font-semibold transition-all duration-700 delay-300 flex items-center space-x-2 hover:scale-105 hover:shadow-lg ${
-            isDarkMode 
-              ? 'bg-gray-800 border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-gray-900' 
-              : 'bg-white border-pink-200 text-pink-600 hover:bg-pink-50'
-          } ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
-        >
-          <MessageSquare className="w-5 h-5" />
-          <span>View Reviews</span>
-        </button>
+
+        {/* Title Section - Smaller on mobile */}
+        <div className="text-center">
+          <h2 className={`hidden sm:block text-2xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+            Choose your services and preferred time
+          </h2>
+          <h3 className={`block sm:hidden text-xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+            Choose your services and preferred time
+          </h3>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Animated Services Selection */}
-        <div 
+        <div
           ref={servicesRef}
-          className={`lg:col-span-2 transform transition-all duration-1000 ease-out ${
-            animateServices 
-              ? 'translate-x-0 opacity-100' 
-              : '-translate-x-8 opacity-0'
-          }`}
+          className={`lg:col-span-2 transform transition-all duration-1000 ease-out ${animateServices
+            ? 'translate-x-0 opacity-100'
+            : '-translate-x-8 opacity-0'
+            }`}
         >
           {/* Enhanced Service Tabs with Cool Animations */}
-          <div className={`relative flex space-x-1 mb-6 p-1 rounded-xl transition-all duration-1000 delay-100 ${
-            isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
-          } ${animateServices ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
-            
+          <div className={`relative flex space-x-1 mb-6 p-1 rounded-xl transition-all duration-1000 delay-100 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'
+            } ${animateServices ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+
             {/* Animated Background Slider */}
-            <div 
-              className={`absolute top-1 bottom-1 w-1/2 rounded-lg transition-all duration-500 ease-out transform ${
-                activeTab === 'regular' 
-                  ? 'translate-x-0' 
-                  : 'translate-x-full'
-              } ${
-                isDarkMode 
-                  ? 'bg-gradient-to-r from-pink-600 to-purple-600 shadow-lg shadow-pink-500/25' 
+            <div
+              className={`absolute top-1 bottom-1 w-1/2 rounded-lg transition-all duration-500 ease-out transform ${activeTab === 'regular'
+                ? 'translate-x-0'
+                : 'translate-x-full'
+                } ${isDarkMode
+                  ? 'bg-gradient-to-r from-pink-600 to-purple-600 shadow-lg shadow-pink-500/25'
                   : 'bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg shadow-pink-500/25'
-              }`}
+                }`}
             />
-            
+
             {/* Regular Services Tab */}
             <button
               onClick={() => handleTabSwitch('regular')}
-              className={`relative flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-500 transform hover:scale-105 z-10 ${
-                activeTab === 'regular'
-                  ? 'text-white shadow-lg scale-105'
-                  : isDarkMode
-                    ? 'text-gray-400 hover:text-gray-200'
-                    : 'text-gray-600 hover:text-gray-800'
-              }`}
+              className={`relative flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-500 transform hover:scale-105 z-10 ${activeTab === 'regular'
+                ? 'text-white shadow-lg scale-105'
+                : isDarkMode
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-gray-600 hover:text-gray-800'
+                }`}
             >
               <span className="relative z-10 flex items-center justify-center space-x-2">
                 <span className={`transition-all duration-300 ${activeTab === 'regular' ? 'animate-pulse' : ''}`}>
@@ -293,17 +317,16 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
                 <span>Regular Services</span>
               </span>
             </button>
-            
+
             {/* Bridal Services Tab */}
             <button
               onClick={() => handleTabSwitch('bridal')}
-              className={`relative flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-500 transform hover:scale-105 z-10 ${
-                activeTab === 'bridal'
-                  ? 'text-white shadow-lg scale-105'
-                  : isDarkMode
-                    ? 'text-gray-400 hover:text-gray-200'
-                    : 'text-gray-600 hover:text-gray-800'
-              }`}
+              className={`relative flex-1 py-4 px-6 rounded-lg font-semibold transition-all duration-500 transform hover:scale-105 z-10 ${activeTab === 'bridal'
+                ? 'text-white shadow-lg scale-105'
+                : isDarkMode
+                  ? 'text-gray-400 hover:text-gray-200'
+                  : 'text-gray-600 hover:text-gray-800'
+                }`}
             >
               <span className="relative z-10 flex items-center justify-center space-x-2">
                 <span className={`transition-all duration-300 ${activeTab === 'bridal' ? 'animate-pulse' : ''}`}>
@@ -318,11 +341,9 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className={`absolute w-1 h-1 rounded-full transition-all duration-1000 ${
-                    activeTab === 'regular' ? 'bg-pink-300' : 'bg-purple-300'
-                  } ${
-                    isTabSwitching ? 'animate-ping' : 'animate-pulse'
-                  }`}
+                  className={`absolute w-1 h-1 rounded-full transition-all duration-1000 ${activeTab === 'regular' ? 'bg-pink-300' : 'bg-purple-300'
+                    } ${isTabSwitching ? 'animate-ping' : 'animate-pulse'
+                    }`}
                   style={{
                     left: `${Math.random() * 100}%`,
                     top: `${Math.random() * 100}%`,
@@ -336,27 +357,24 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
 
           {/* Services Grid with Enhanced Switching Animation */}
           <div className="relative overflow-hidden">
-            <div 
-              className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-500 ease-out ${
-                isTabSwitching 
-                  ? `transform ${
-                      tabSwitchDirection === 'right' 
-                        ? 'translate-x-full opacity-0 scale-95' 
-                        : '-translate-x-full opacity-0 scale-95'
-                    }` 
-                  : 'translate-x-0 opacity-100 scale-100'
-              }`}
+            <div
+              className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-500 ease-out ${isTabSwitching
+                ? `transform ${tabSwitchDirection === 'right'
+                  ? 'translate-x-full opacity-0 scale-95'
+                  : '-translate-x-full opacity-0 scale-95'
+                }`
+                : 'translate-x-0 opacity-100 scale-100'
+                }`}
             >
               {(activeTab === 'regular' ? regularServices : bridalServices).map((service, index) => (
                 <div
                   key={service.id}
-                  className={`transform transition-all duration-700 ease-out hover:scale-105 ${
-                    animateServices && !isTabSwitching
-                      ? 'translate-y-0 opacity-100' 
-                      : 'translate-y-4 opacity-0'
-                  }`}
-                  style={{ 
-                    transitionDelay: isTabSwitching ? '0ms' : `${200 + index * 50}ms` 
+                  className={`transform transition-all duration-700 ease-out hover:scale-105 ${animateServices && !isTabSwitching
+                    ? 'translate-y-0 opacity-100'
+                    : 'translate-y-4 opacity-0'
+                    }`}
+                  style={{
+                    transitionDelay: isTabSwitching ? '0ms' : `${200 + index * 50}ms`
                   }}
                 >
                   <ServiceCard
@@ -373,23 +391,20 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
             {/* Tab Switch Loading Overlay */}
             {isTabSwitching && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className={`flex items-center space-x-3 px-6 py-3 rounded-xl ${
-                  isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'
-                } backdrop-blur-sm shadow-lg`}>
+                <div className={`flex items-center space-x-3 px-6 py-3 rounded-xl ${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'
+                  } backdrop-blur-sm shadow-lg`}>
                   <div className="flex space-x-1">
                     {[...Array(3)].map((_, i) => (
                       <div
                         key={i}
-                        className={`w-2 h-2 rounded-full animate-bounce ${
-                          activeTab === 'regular' ? 'bg-pink-500' : 'bg-purple-500'
-                        }`}
+                        className={`w-2 h-2 rounded-full animate-bounce ${activeTab === 'regular' ? 'bg-pink-500' : 'bg-purple-500'
+                          }`}
                         style={{ animationDelay: `${i * 100}ms` }}
                       />
                     ))}
                   </div>
-                  <span className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                  }`}>
+                  <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                    }`}>
                     Loading {activeTab === 'regular' ? 'Regular' : 'Bridal'} Services...
                   </span>
                 </div>
@@ -399,31 +414,26 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
         </div>
 
         {/* Animated Booking Summary */}
-        <div 
+        <div
           ref={summaryRef}
-          className={`lg:col-span-1 transform transition-all duration-1000 ease-out ${
-            animateSummary 
-              ? 'translate-x-0 opacity-100' 
-              : 'translate-x-8 opacity-0'
-          }`}
+          className={`lg:col-span-1 transform transition-all duration-1000 ease-out ${animateSummary
+            ? 'translate-x-0 opacity-100'
+            : 'translate-x-8 opacity-0'
+            }`}
         >
-          <div className={`rounded-xl shadow-lg p-6 sticky top-4 transition-all duration-1000 hover:shadow-2xl ${
-            isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
-          } ${animateSummary ? 'scale-100' : 'scale-95'}`}>
-            <h3 className={`text-xl font-semibold mb-4 flex items-center transition-all duration-700 delay-100 ${
-              isDarkMode ? 'text-gray-100' : 'text-gray-800'
-            } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
+          <div className={`rounded-xl shadow-lg p-6 sticky top-4 transition-all duration-1000 hover:shadow-2xl ${isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'
+            } ${animateSummary ? 'scale-100' : 'scale-95'}`}>
+            <h3 className={`text-xl font-semibold mb-4 flex items-center transition-all duration-700 delay-100 ${isDarkMode ? 'text-gray-100' : 'text-gray-800'
+              } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
               <ShoppingBag className="w-5 h-5 mr-2 text-pink-600 animate-bounce" />
               Booking Summary
             </h3>
 
             {/* Customer Phone Number */}
-            <div className={`mb-4 transition-all duration-700 delay-150 ${
-              animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
-            }`}>
-              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            <div className={`mb-4 transition-all duration-700 delay-150 ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
               }`}>
+              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                 <Phone className="w-4 h-4 inline mr-1" />
                 Your Phone Number (Optional)
               </label>
@@ -432,26 +442,93 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="Enter your phone number"
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 focus:scale-105 ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' 
-                    : 'bg-white border-gray-300 text-gray-900'
-                }`}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 focus:scale-105 ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400'
+                  : 'bg-white border-gray-300 text-gray-900'
+                  }`}
               />
-              <p className={`text-xs mt-1 transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}>
+              <p className={`text-xs mt-1 transition-colors duration-300 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                 We'll send you SMS confirmations and reminders
               </p>
             </div>
 
+            {/* Service Location Toggle */}
+            {homeServiceEnabled && (
+              <div className={`mb-4 transition-all duration-700 delay-175 ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+                }`}>
+                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  Service Location
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setServiceLocation('parlor')}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all duration-300 hover:scale-105 ${serviceLocation === 'parlor'
+                      ? 'border-pink-500 bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 shadow-md'
+                      : isDarkMode
+                        ? 'border-gray-600 text-gray-400 hover:border-pink-400'
+                        : 'border-gray-300 text-gray-600 hover:border-pink-300'
+                      }`}
+                  >
+                    <Building2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">At Parlor</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setServiceLocation('home')}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all duration-300 hover:scale-105 ${serviceLocation === 'home'
+                      ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 shadow-md'
+                      : isDarkMode
+                        ? 'border-gray-600 text-gray-400 hover:border-purple-400'
+                        : 'border-gray-300 text-gray-600 hover:border-purple-300'
+                      }`}
+                  >
+                    <Home className="w-4 h-4" />
+                    <span className="text-sm font-medium">Home Visit</span>
+                  </button>
+                </div>
+                {serviceLocation === 'home' && (
+                  <p className={`text-xs mt-2 flex items-center gap-1 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                    ✨ Home visit charges may vary based on your area and location.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Customer Address (for Home Visit) */}
+            {serviceLocation === 'home' && (
+              <div className={`mb-4 transition-all duration-500 ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+                }`}>
+                <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  Your Address *
+                </label>
+                <textarea
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  placeholder="Enter your complete address for home visit..."
+                  rows={3}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 resize-none ${isDarkMode
+                    ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                  required={serviceLocation === 'home'}
+                />
+                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Include landmark for easy navigation
+                </p>
+              </div>
+            )}
+
             {/* Date Selection */}
-            <div className={`mb-4 transition-all duration-700 delay-200 ${
-              animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
-            }`}>
-              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            <div className={`mb-4 transition-all duration-700 delay-200 ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
               }`}>
+              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Select Date
               </label>
@@ -460,21 +537,18 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 min={today}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 focus:scale-105 ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-gray-100' 
-                    : 'bg-white border-gray-300 text-gray-900'
-                }`}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 focus:scale-105 ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-gray-100'
+                  : 'bg-white border-gray-300 text-gray-900'
+                  }`}
               />
             </div>
 
             {/* Time Selection */}
-            <div className={`mb-6 transition-all duration-700 delay-250 ${
-              animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
-            }`}>
-              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            <div className={`mb-6 transition-all duration-700 delay-250 ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
               }`}>
+              <label className={`block text-sm font-medium mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                 <Clock className="w-4 h-4 inline mr-1" />
                 Select Time
               </label>
@@ -483,15 +557,14 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
                   <button
                     key={time}
                     onClick={() => setSelectedTime(time)}
-                    className={`p-2 text-sm rounded-lg border transition-all duration-500 hover:scale-110 ${
-                      selectedTime === time
-                        ? 'bg-pink-600 text-white border-pink-600 transform scale-110 shadow-lg'
-                        : isDarkMode
-                          ? 'bg-gray-700 text-gray-300 border-gray-600 hover:border-pink-400 hover:text-pink-400'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-pink-300'
-                    }`}
-                    style={{ 
-                      transitionDelay: `${index * 25}ms` 
+                    className={`p-2 text-sm rounded-lg border transition-all duration-500 hover:scale-110 ${selectedTime === time
+                      ? 'bg-pink-600 text-white border-pink-600 transform scale-110 shadow-lg'
+                      : isDarkMode
+                        ? 'bg-gray-700 text-gray-300 border-gray-600 hover:border-pink-400 hover:text-pink-400'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-pink-300'
+                      }`}
+                    style={{
+                      transitionDelay: `${index * 25}ms`
                     }}
                   >
                     {time}
@@ -502,12 +575,10 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
 
             {/* Selected Services */}
             {getSelectedServicesList().length > 0 && (
-              <div className={`mb-6 transition-all duration-700 delay-300 ${
-                animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
-              }`}>
-                <h4 className={`font-medium mb-3 transition-colors duration-300 ${
-                  isDarkMode ? 'text-gray-200' : 'text-gray-800'
+              <div className={`mb-6 transition-all duration-700 delay-300 ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
                 }`}>
+                <h4 className={`font-medium mb-3 transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                  }`}>
                   Selected Services
                 </h4>
                 <div className="space-y-2">
@@ -516,13 +587,12 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
                     const service = allServices.find(s => s.id === serviceId);
                     if (!service) return null;
                     return (
-                      <div 
-                        key={serviceId} 
-                        className={`flex justify-between text-sm transition-all duration-500 hover:scale-105 ${
-                          isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}
-                        style={{ 
-                          transitionDelay: `${index * 50}ms` 
+                      <div
+                        key={serviceId}
+                        className={`flex justify-between text-sm transition-all duration-500 hover:scale-105 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}
+                        style={{
+                          transitionDelay: `${index * 50}ms`
                         }}
                       >
                         <span>{service.name} x{quantity}</span>
@@ -535,64 +605,35 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
             )}
 
             {/* Total */}
-            <div className={`border-t pt-4 mb-6 transition-all duration-700 delay-350 ${
-              isDarkMode ? 'border-gray-600' : 'border-gray-200'
-            } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
+            <div className={`border-t pt-4 mb-6 transition-all duration-700 delay-350 ${isDarkMode ? 'border-gray-600' : 'border-gray-200'
+              } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
               <div className="flex justify-between items-center mb-2">
-                <span className={`text-sm transition-colors duration-300 ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>
+                <span className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                   Duration:
                 </span>
-                <span className={`font-medium transition-colors duration-300 ${
-                  isDarkMode ? 'text-gray-200' : 'text-gray-800'
-                }`}>
+                <span className={`font-medium transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                  }`}>
                   {getTotalDuration()} min
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={`text-lg font-semibold transition-colors duration-300 ${
-                  isDarkMode ? 'text-gray-200' : 'text-gray-800'
-                }`}>
+                <span className={`text-lg font-semibold transition-colors duration-300 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'
+                  }`}>
                   Total:
                 </span>
                 <span className="text-2xl font-bold text-pink-600 animate-pulse">₹{getTotalPrice()}</span>
               </div>
             </div>
 
-            {/* REAL-TIME SMS Notification Info */}
-            <div className={`mb-6 p-3 border rounded-lg transition-all duration-700 delay-400 hover:scale-105 ${
-              isDarkMode 
-                ? 'bg-blue-900/30 border-blue-700' 
-                : 'bg-blue-50 border-blue-200'
-            } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
-              <div className="flex items-center space-x-2 mb-2">
-                <Phone className="w-4 h-4 text-blue-600 animate-pulse" />
-                <span className={`text-sm font-medium transition-colors duration-300 ${
-                  isDarkMode ? 'text-blue-300' : 'text-blue-800'
-                }`}>
-                  🚀 INSTANT Real-Time Notification
-                </span>
-              </div>
-              <p className={`text-xs transition-colors duration-300 ${
-                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-              }`}>
-                📱 Akshata will receive an <strong>INSTANT SMS</strong> at <strong>+919740303404</strong> the moment you book!
-              </p>
-              <p className={`text-xs mt-1 transition-colors duration-300 ${
-                isDarkMode ? 'text-blue-400' : 'text-blue-600'
-              }`}>
-                ⚡ No delays - Real-time booking notifications with multiple SMS providers for 100% delivery
-              </p>
-            </div>
+
 
             {/* Book Button */}
             <button
               onClick={handleBooking}
               disabled={!selectedDate || !selectedTime || getSelectedServicesList().length === 0 || isBooking}
-              className={`w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:from-pink-700 hover:to-purple-700 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:scale-105 hover:shadow-2xl transform ${
-                animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
-              }`}
+              className={`w-full bg-gradient-to-r from-pink-600 to-purple-600 text-white py-4 rounded-xl font-semibold hover:from-pink-700 hover:to-purple-700 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 hover:scale-105 hover:shadow-2xl transform ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
+                }`}
               style={{ transitionDelay: '450ms' }}
             >
               {isBooking ? (
@@ -602,16 +643,15 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
                 </>
               ) : (
                 <>
-                  <span>🚀 Book Appointment (Instant SMS to Akshata)</span>
+                  <span>🚀 Book Appointment (Instant notification to Akshata)</span>
                   <ArrowRight className="w-5 h-5 animate-bounce" />
                 </>
               )}
             </button>
 
             {/* Contact Info */}
-            <div className={`mt-4 text-center text-sm transition-all duration-700 delay-500 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
+            <div className={`mt-4 text-center text-sm transition-all duration-700 delay-500 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              } ${animateSummary ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'}`}>
               <p>Need help? Call us at</p>
               <a href="tel:+919740303404" className="text-pink-600 hover:underline font-medium hover:scale-105 inline-block transition-transform duration-300">
                 +91 97403 03404 (Akshata)

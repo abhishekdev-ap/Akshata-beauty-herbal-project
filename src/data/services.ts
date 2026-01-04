@@ -1,153 +1,237 @@
 import { Service } from '../types';
 
+// Regular Services - Individual Items
 export const regularServices: Service[] = [
-  {
-    id: 'facial-basic',
-    name: 'Basic Facial',
-    price: 800,
-    duration: 60,
-    category: 'regular',
-    description: 'Deep cleansing facial with moisturizing'
-  },
-  {
-    id: 'facial-gold',
-    name: 'Gold Facial',
-    price: 1500,
-    duration: 90,
-    category: 'regular',
-    description: 'Luxurious gold facial for radiant skin'
-  },
-  {
-    id: 'facial-diamond',
-    name: 'Diamond Facial',
-    price: 2000,
-    duration: 120,
-    category: 'regular',
-    description: 'Premium diamond facial with anti-aging benefits'
-  },
-  {
-    id: 'haircut-styling',
-    name: 'Hair Cut & Styling',
-    price: 600,
-    duration: 45,
-    category: 'regular',
-    description: 'Professional haircut with styling'
-  },
-  {
-    id: 'hair-wash-blowdry',
-    name: 'Hair Wash & Blow Dry',
-    price: 400,
-    duration: 30,
-    category: 'regular',
-    description: 'Hair wash with professional blow dry'
-  },
-  {
-    id: 'manicure',
-    name: 'Manicure',
-    price: 500,
-    duration: 45,
-    category: 'regular',
-    description: 'Complete nail care and polish'
-  },
-  {
-    id: 'pedicure',
-    name: 'Pedicure',
-    price: 600,
-    duration: 60,
-    category: 'regular',
-    description: 'Foot care with nail polish'
-  },
-  {
-    id: 'eyebrow-threading',
-    name: 'Eyebrow Threading',
-    price: 150,
-    duration: 15,
-    category: 'regular',
-    description: 'Precise eyebrow shaping'
-  },
-  {
-    id: 'upper-lip-threading',
-    name: 'Upper Lip Threading',
-    price: 100,
-    duration: 10,
-    category: 'regular',
-    description: 'Upper lip hair removal'
-  },
-  {
-    id: 'full-face-threading',
-    name: 'Full Face Threading',
-    price: 400,
-    duration: 30,
-    category: 'regular',
-    description: 'Complete facial hair removal'
-  }
+    {
+        id: 'threading',
+        name: 'Threading',
+        price: 50,
+        duration: 15,
+        category: 'regular',
+        description: 'Eyebrow and facial threading'
+    },
+    {
+        id: 'detan',
+        name: 'Detan',
+        price: 150,
+        duration: 30,
+        category: 'regular',
+        description: 'Skin detan treatment'
+    },
+    {
+        id: 'cleanup',
+        name: 'Clean-up',
+        price: 200,
+        duration: 45,
+        category: 'regular',
+        description: 'Deep cleansing and cleanup'
+    },
+    {
+        id: 'haircut',
+        name: 'Haircut',
+        price: 200,
+        duration: 30,
+        category: 'regular',
+        description: 'Professional haircut'
+    },
+    {
+        id: 'head-massage',
+        name: 'Head Massage',
+        price: 150,
+        duration: 30,
+        category: 'regular',
+        description: 'Relaxing head massage'
+    },
+    {
+        id: 'bleach',
+        name: 'Bleach',
+        price: 200,
+        duration: 30,
+        category: 'regular',
+        description: 'Skin bleaching treatment'
+    },
+    {
+        id: 'hand-wax',
+        name: 'Hand Wax',
+        price: 150,
+        duration: 20,
+        category: 'regular',
+        description: 'Full hand waxing'
+    },
+    {
+        id: 'facial',
+        name: 'Facial',
+        price: 300,
+        duration: 60,
+        category: 'regular',
+        description: 'Rejuvenating facial treatment'
+    },
+    {
+        id: 'leg-wax',
+        name: 'Leg Wax',
+        price: 250,
+        duration: 30,
+        category: 'regular',
+        description: 'Full leg waxing'
+    },
+    {
+        id: 'underarms-wax',
+        name: 'Underarms Wax',
+        price: 100,
+        duration: 10,
+        category: 'regular',
+        description: 'Underarms waxing'
+    },
+    {
+        id: 'manicure',
+        name: 'Manicure',
+        price: 250,
+        duration: 45,
+        category: 'regular',
+        description: 'Complete nail care for hands'
+    },
+    {
+        id: 'pedicure',
+        name: 'Pedicure',
+        price: 300,
+        duration: 60,
+        category: 'regular',
+        description: 'Complete nail care for feet'
+    },
+    {
+        id: 'waxing',
+        name: 'Full Body Waxing',
+        price: 500,
+        duration: 60,
+        category: 'regular',
+        description: 'Complete body waxing'
+    },
+    {
+        id: 'hairstyle',
+        name: 'Hair Styling',
+        price: 300,
+        duration: 45,
+        category: 'regular',
+        description: 'Professional hair styling'
+    },
+    {
+        id: 'saree-draping',
+        name: 'Saree Draping',
+        price: 299,
+        duration: 30,
+        category: 'regular',
+        description: 'Professional saree pleating and draping'
+    }
 ];
 
+// Package Services (combo offers) - Based on your price list
+export const packageServices: Service[] = [
+    {
+        id: 'basic-package-399',
+        name: 'Basic Glow Package',
+        price: 399,
+        duration: 60,
+        category: 'regular',
+        description: 'Threading + Detan + Clean-up'
+    },
+    {
+        id: 'haircare-package-499',
+        name: 'Hair Care Package',
+        price: 499,
+        duration: 75,
+        category: 'regular',
+        description: 'Threading + Haircut + Head Massage'
+    },
+    {
+        id: 'glow-package-599',
+        name: 'Premium Glow Package',
+        price: 599,
+        duration: 90,
+        category: 'regular',
+        description: 'Bleach + Hand-wax + Facial'
+    },
+    {
+        id: 'waxing-package-699',
+        name: 'Full Waxing Package',
+        price: 699,
+        duration: 60,
+        category: 'regular',
+        description: 'Leg-wax + Underarms + Hand wax'
+    },
+    {
+        id: 'nail-package-799',
+        name: 'Complete Nail Care Package',
+        price: 799,
+        duration: 120,
+        category: 'regular',
+        description: 'Underarms + Manicure + Pedicure'
+    },
+    {
+        id: 'beauty-package-899',
+        name: 'Complete Beauty Package',
+        price: 899,
+        duration: 120,
+        category: 'regular',
+        description: 'Haircut + Facial + Detan + Threading + Handwax'
+    },
+    {
+        id: 'premium-package-1999',
+        name: 'Premium Beauty Package',
+        price: 1999,
+        duration: 180,
+        category: 'regular',
+        description: 'Threading + Waxing + Detan/Bleach + Facial + Pedicure'
+    }
+];
+
+// Bridal Services - Based on your price list
 export const bridalServices: Service[] = [
-  {
-    id: 'bridal-makeup-basic',
-    name: 'Basic Bridal Makeup',
-    price: 8000,
-    duration: 180,
-    category: 'bridal',
-    description: 'Complete bridal makeup with base, eyes, and lips'
-  },
-  {
-    id: 'bridal-makeup-premium',
-    name: 'Premium Bridal Makeup',
-    price: 15000,
-    duration: 240,
-    category: 'bridal',
-    description: 'High-end bridal makeup with premium products'
-  },
-  {
-    id: 'bridal-makeup-luxury',
-    name: 'Luxury Bridal Makeup',
-    price: 25000,
-    duration: 300,
-    category: 'bridal',
-    description: 'Luxury bridal makeup with international brands'
-  },
-  {
-    id: 'bridal-hair-styling',
-    name: 'Bridal Hair Styling',
-    price: 5000,
-    duration: 120,
-    category: 'bridal',
-    description: 'Elegant bridal hairstyling'
-  },
-  {
-    id: 'bridal-saree-draping',
-    name: 'Saree Draping',
-    price: 2000,
-    duration: 30,
-    category: 'bridal',
-    description: 'Professional saree draping'
-  },
-  {
-    id: 'mehendi-basic',
-    name: 'Basic Mehendi',
-    price: 1500,
-    duration: 120,
-    category: 'bridal',
-    description: 'Traditional henna designs'
-  },
-  {
-    id: 'mehendi-bridal',
-    name: 'Bridal Mehendi',
-    price: 5000,
-    duration: 300,
-    category: 'bridal',
-    description: 'Intricate bridal henna designs'
-  },
-  {
-    id: 'pre-bridal-package',
-    name: 'Pre-Bridal Package',
-    price: 12000,
-    duration: 480,
-    category: 'bridal',
-    description: 'Complete pre-bridal treatment package'
-  }
+    {
+        id: 'simple-look',
+        name: 'Simple Look Makeup',
+        price: 999,
+        duration: 60,
+        category: 'bridal',
+        description: 'Elegant simple makeup look'
+    },
+    {
+        id: 'bridal-hairstyle',
+        name: 'Bridal Hairstyle',
+        price: 300,
+        duration: 45,
+        category: 'bridal',
+        description: 'Professional bridal hair styling'
+    },
+    {
+        id: 'bridal-makeup',
+        name: 'Bridal Makeup',
+        price: 4999,
+        duration: 120,
+        category: 'bridal',
+        description: 'Complete bridal makeup (10% Discount applied)'
+    },
+    {
+        id: 'bridal-saree-draping',
+        name: 'Bridal Saree Draping',
+        price: 299,
+        duration: 30,
+        category: 'bridal',
+        description: 'Professional bridal saree pleating'
+    },
+    {
+        id: 'engagement-makeup',
+        name: 'Engagement Makeup',
+        price: 3999,
+        duration: 90,
+        category: 'bridal',
+        description: 'Beautiful engagement celebration look'
+    },
+    {
+        id: 'reception-makeup',
+        name: 'Reception Makeup',
+        price: 3999,
+        duration: 90,
+        category: 'bridal',
+        description: 'Elegant reception look makeup'
+    }
 ];
-
-export const allServices = [...regularServices, ...bridalServices];

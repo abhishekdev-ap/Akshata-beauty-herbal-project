@@ -5,6 +5,7 @@ import { Appointment, Review } from '../types';
 interface ReviewPageProps {
   appointment: Appointment;
   onReviewSubmit: (review: Review) => void;
+  isDarkMode?: boolean;
 }
 
 const ReviewPage: React.FC<ReviewPageProps> = ({ appointment, onReviewSubmit }) => {
@@ -60,7 +61,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ appointment, onReviewSubmit }) 
         {/* Review Form */}
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Rate Your Experience</h3>
-          
+
           {/* Star Rating */}
           <div className="mb-6">
             <div className="flex justify-center space-x-2 mb-3">
@@ -73,11 +74,10 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ appointment, onReviewSubmit }) 
                   className="transition-transform hover:scale-110"
                 >
                   <Star
-                    className={`w-10 h-10 ${
-                      star <= (hoveredRating || rating)
+                    className={`w-10 h-10 ${star <= (hoveredRating || rating)
                         ? 'text-yellow-400 fill-current'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   />
                 </button>
               ))}
@@ -100,7 +100,7 @@ const ReviewPage: React.FC<ReviewPageProps> = ({ appointment, onReviewSubmit }) 
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell us about your experience at Akshata Parlor..."
+              placeholder="Tell us about your experience at Akshata Beauty Herbal Parlour..."
               rows={4}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
             />

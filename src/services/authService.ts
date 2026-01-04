@@ -44,9 +44,10 @@ export class AuthService {
     this.emailService = EmailService.getInstance();
     this.loadUsersFromStorage();
     this.loadResetTokensFromStorage();
+    this.initializeDemoUser();
     // Clean up expired tokens on initialization
     this.cleanupExpiredTokens();
-    
+
     // Set up periodic cleanup every 5 minutes
     setInterval(() => {
       this.cleanupExpiredTokens();
@@ -150,7 +151,7 @@ export class AuthService {
     return avatars[Math.floor(Math.random() * avatars.length)];
   }
 
-  async register(credentials: LoginCredentials): Promise<AuthResponse> {
+  async register(credentials: LoginCredentials, name?: string): Promise<AuthResponse> {
     const { email, password } = credentials;
 
     // Validate email format
@@ -177,7 +178,7 @@ export class AuthService {
       id: userId,
       email,
       password: hashedPassword,
-      name: this.extractNameFromEmail(email),
+      name: name || this.extractNameFromEmail(email),
       avatar: this.getRandomAvatar(),
       createdAt: now,
       lastLogin: now
@@ -197,6 +198,9 @@ export class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const { email, password } = credentials;
 
+    // Reload users from storage to ensure we have the latest data (in case password was reset)
+    this.loadUsersFromStorage();
+
     // Validate email format
     if (!this.validateEmail(email)) {
       return { success: false, error: 'Please enter a valid email address' };
@@ -205,8 +209,7 @@ export class AuthService {
     // Check if user exists
     const user = this.users.get(email);
     if (!user) {
-      // Auto-register new users for better UX
-      return this.register(credentials);
+      return { success: false, error: 'Invalid email or password' };
     }
 
     // Verify password
@@ -227,6 +230,32 @@ export class AuthService {
     return { success: true, user: userWithoutPassword };
   }
 
+  private initializeDemoUser(): void {
+    // Only seed if NO users exist at all
+    if (this.users.size === 0) {
+      const email = 'demo@akshata.com';
+      const password = 'demo123';
+
+      const userId = this.generateUserId();
+      const hashedPassword = this.hashPassword(password);
+      const now = new Date().toISOString();
+
+      const demoUser = {
+        id: userId,
+        email,
+        password: hashedPassword,
+        name: 'Demo User',
+        avatar: this.getRandomAvatar(),
+        createdAt: now,
+        lastLogin: now
+      };
+
+      this.users.set(email, demoUser);
+      this.saveUsersToStorage();
+      console.log('🌱 Seeded demo user:', email);
+    }
+  }
+
   async requestPasswordReset(email: string): Promise<PasswordResetResponse> {
     try {
       console.log('🔄 Processing password reset request for:', email);
@@ -242,9 +271,9 @@ export class AuthService {
         // For security, don't reveal if email exists or not
         // But still return success to prevent email enumeration
         console.log('⚠️ Password reset requested for non-existent email:', email);
-        return { 
-          success: true, 
-          message: 'If an account with this email exists, you will receive a password reset link.' 
+        return {
+          success: true,
+          message: 'If an account with this email exists, you will receive a password reset link.'
         };
       }
 
@@ -263,28 +292,28 @@ export class AuthService {
 
       // Send password reset email using EmailService
       console.log('📧 Sending password reset email...');
-      
+
       const emailResult = await this.emailService.sendPasswordResetEmail(email, token);
-      
+
       if (emailResult.success) {
         console.log('✅ Password reset email sent successfully');
-        return { 
-          success: true, 
-          message: 'Password reset link has been sent to your email address. Please check your inbox and spam folder.' 
+        return {
+          success: true,
+          message: 'Password reset link has been sent to your email address. Please check your inbox and spam folder.'
         };
       } else {
         console.error('❌ Failed to send password reset email:', emailResult.error);
-        return { 
-          success: false, 
-          error: emailResult.error || 'Failed to send password reset email. Please try again.' 
+        return {
+          success: false,
+          error: emailResult.error || 'Failed to send password reset email. Please try again.'
         };
       }
 
     } catch (error) {
       console.error('❌ Password reset request error:', error);
-      return { 
-        success: false, 
-        error: 'An unexpected error occurred. Please try again or contact support.' 
+      return {
+        success: false,
+        error: 'An unexpected error occurred. Please try again or contact support.'
       };
     }
   }
@@ -297,6 +326,9 @@ export class AuthService {
       if (!this.validatePassword(newPassword)) {
         return { success: false, error: 'Password must be at least 6 characters long' };
       }
+
+      // Reload users from storage to ensure we have the latest data
+      this.loadUsersFromStorage();
 
       // Check if token exists and is valid
       const resetData = this.passwordResetTokens.get(token);
@@ -323,15 +355,23 @@ export class AuthService {
       }
 
       console.log('👤 Found user for password reset:', resetData.email);
+      console.log('🔐 Old password hash:', user.password);
 
       // Update password
       const hashedPassword = this.hashPassword(newPassword);
+      console.log('🔐 New password hash:', hashedPassword);
+
       user.password = hashedPassword;
       user.lastLogin = new Date().toISOString();
 
-      // Save updated user
+      // Save updated user - make sure to use the correct key (email)
       this.users.set(resetData.email, user);
       this.saveUsersToStorage();
+
+      // Verify the save worked
+      this.loadUsersFromStorage();
+      const verifyUser = this.users.get(resetData.email);
+      console.log('✅ Verified saved password hash:', verifyUser?.password);
 
       // Remove used token
       this.passwordResetTokens.delete(token);
@@ -339,16 +379,16 @@ export class AuthService {
 
       console.log('✅ Password reset successful for:', resetData.email);
 
-      return { 
-        success: true, 
-        message: 'Password has been successfully reset. You can now sign in with your new password.' 
+      return {
+        success: true,
+        message: 'Password has been successfully reset. You can now sign in with your new password.'
       };
 
     } catch (error) {
       console.error('❌ Password reset error:', error);
-      return { 
-        success: false, 
-        error: 'An unexpected error occurred during password reset. Please try again.' 
+      return {
+        success: false,
+        error: 'An unexpected error occurred during password reset. Please try again.'
       };
     }
   }
@@ -384,14 +424,14 @@ export class AuthService {
   private cleanupExpiredTokens(): void {
     const now = Date.now();
     let cleanedCount = 0;
-    
+
     for (const [token, data] of this.passwordResetTokens.entries()) {
       if (now > data.expires) {
         this.passwordResetTokens.delete(token);
         cleanedCount++;
       }
     }
-    
+
     if (cleanedCount > 0) {
       console.log(`🧹 Cleaned up ${cleanedCount} expired reset tokens`);
       this.saveResetTokensToStorage();
@@ -401,13 +441,13 @@ export class AuthService {
   // Update user profile
   async updateUserProfile(userId: string, updates: Partial<User>): Promise<AuthResponse> {
     const userEntry = Array.from(this.users.entries()).find(([_, user]) => user.id === userId);
-    
+
     if (!userEntry) {
       return { success: false, error: 'User not found' };
     }
 
     const [email, user] = userEntry;
-    
+
     // Update user data
     const updatedUser = {
       ...user,
@@ -439,9 +479,9 @@ export class AuthService {
   getResetTokenInfo(token: string): { email: string; expires: number; isValid: boolean } | null {
     const resetData = this.passwordResetTokens.get(token);
     if (!resetData) return null;
-    
-    return { 
-      email: resetData.email, 
+
+    return {
+      email: resetData.email,
       expires: resetData.expires,
       isValid: Date.now() <= resetData.expires
     };
