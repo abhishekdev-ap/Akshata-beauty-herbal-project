@@ -209,7 +209,7 @@ export class AuthService {
     // Check if user exists
     const user = this.users.get(email);
     if (!user) {
-      return { success: false, error: 'Invalid email or password' };
+      return { success: false, error: 'User account not found. Please Sign Up first.' };
     }
 
     // Verify password

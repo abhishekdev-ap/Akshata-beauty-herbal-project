@@ -10,7 +10,7 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
     const [isVisible, setIsVisible] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
     // Video playlist - all 3 play in sequence, then loop
     const videoSources = [
@@ -37,51 +37,45 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         }
     ];
 
-    // Switch to next video
-    const playNextVideo = () => {
-        const nextIndex = (currentVideoIndex + 1) % videoSources.length;
-        console.log(`Switching from video ${currentVideoIndex + 1} to video ${nextIndex + 1}`);
-        setCurrentVideoIndex(nextIndex);
-    };
-
-    // Handle video ended event
-    const handleVideoEnded = () => {
-        console.log(`Video ${currentVideoIndex + 1} ended`);
-        playNextVideo();
-    };
-
-    // Handle timeupdate to detect near-end (backup for ended event)
-    const handleTimeUpdate = () => {
-        const video = videoRef.current;
-        if (video && video.duration > 0) {
-            // If video is within 0.5 seconds of ending
-            if (video.duration - video.currentTime < 0.5 && video.duration - video.currentTime > 0) {
-                // Don't do anything here, let ended event handle it
-            }
+    // Handle video ended event - switch to next video
+    const handleVideoEnded = (index: number) => {
+        if (index === currentVideoIndex) {
+            const nextIndex = (currentVideoIndex + 1) % videoSources.length;
+            console.log(`Video ${index + 1} ended, switching to video ${nextIndex + 1}`);
+            setCurrentVideoIndex(nextIndex);
         }
     };
 
-    // Load and play video when index changes
+    // Preload all videos on mount
     useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
+        videoRefs.current.forEach((video, index) => {
+            if (video) {
+                video.load();
+                // Preload by playing and immediately pausing (except first video)
+                if (index !== 0) {
+                    video.pause();
+                }
+            }
+        });
+    }, []);
 
-        console.log(`Loading video ${currentVideoIndex + 1}: ${videoSources[currentVideoIndex]}`);
-
-        // Set new source and play
-        video.src = videoSources[currentVideoIndex];
-        video.load();
-
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-            playPromise
-                .then(() => {
-                    console.log(`Video ${currentVideoIndex + 1} playing successfully`);
-                })
-                .catch(err => {
-                    console.log('Autoplay blocked:', err);
-                });
-        }
+    // Play current video, pause others
+    useEffect(() => {
+        videoRefs.current.forEach((video, index) => {
+            if (video) {
+                if (index === currentVideoIndex) {
+                    video.currentTime = 0;
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(err => {
+                            console.log('Autoplay blocked:', err);
+                        });
+                    }
+                } else {
+                    video.pause();
+                }
+            }
+        });
     }, [currentVideoIndex]);
 
     useEffect(() => {
@@ -105,16 +99,25 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Video Background */}
             <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    onEnded={handleVideoEnded}
-                    onTimeUpdate={handleTimeUpdate}
-                    className="absolute top-0 left-0 w-full h-full object-cover"
-                    style={{ minHeight: '100vh', minWidth: '100vw' }}
-                />
+                {videoSources.map((src, index) => (
+                    <video
+                        key={src}
+                        ref={(el) => { videoRefs.current[index] = el; }}
+                        src={src}
+                        autoPlay={index === 0}
+                        muted
+                        playsInline
+                        preload="auto"
+                        onEnded={() => handleVideoEnded(index)}
+                        className="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500"
+                        style={{
+                            minHeight: '100vh',
+                            minWidth: '100vw',
+                            opacity: currentVideoIndex === index ? 1 : 0,
+                            zIndex: currentVideoIndex === index ? 1 : 0
+                        }}
+                    />
+                ))}
             </div>
 
             {/* Gradient Overlay */}
@@ -245,12 +248,14 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
             </div>
 
             {/* Scroll Indicator */}
-            <button
-                onClick={scrollToNext}
-                className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce z-30"
-            >
-                <ChevronDown className="w-8 h-8" />
-            </button>
+            <div className="absolute bottom-8 left-0 right-0 w-full flex justify-center z-30">
+                <button
+                    onClick={scrollToNext}
+                    className="text-white animate-bounce"
+                >
+                    <ChevronDown className="w-8 h-8" />
+                </button>
+            </div>
         </section>
     );
 };

@@ -63,19 +63,40 @@ const LoginPage: React.FC<LoginPageProps> = ({
     return emailRegex.test(email);
   };
 
-  // Google Sign-In handler
+  // Google Sign-In handler (Simulated with Password Check)
   const handleGoogleLogin = async () => {
     setError('');
     setIsGoogleLoading(true);
 
     try {
-      // Direct email prompt for simple login (works without Google Cloud setup)
-      const googleEmail = prompt('Enter your Google email address to sign in:');
+      // 1. Direct email prompt
+      const googleEmail = prompt('Enter your Google email address:');
+      if (!googleEmail) {
+        setIsGoogleLoading(false);
+        return;
+      }
 
-      if (googleEmail && validateEmail(googleEmail)) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!validateEmail(googleEmail)) {
+        setError('Please enter a valid Google email address');
+        setIsGoogleLoading(false);
+        return;
+      }
 
-        // Format name from email
+      // 2. Password prompt (Security Feature)
+      const googlePassword = prompt('Enter your password to continue:');
+      if (!googlePassword) {
+        setIsGoogleLoading(false);
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      let result;
+      // 3. Authenticate via Service
+      if (isLoginMode) {
+        result = await authService.login({ email: googleEmail, password: googlePassword });
+      } else {
+        // Format name from email if registering
         const formattedName = googleEmail
           .split('@')[0]
           .replace(/[^a-zA-Z0-9]/g, ' ')
@@ -84,22 +105,25 @@ const LoginPage: React.FC<LoginPageProps> = ({
           .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
           .join(' ') || 'User';
 
-        const user = {
-          id: 'google_' + Date.now(),
-          name: formattedName,
-          email: googleEmail,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formattedName)}&background=random&color=fff`,
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
-        };
+        result = await authService.register({ email: googleEmail, password: googlePassword }, formattedName);
+      }
 
-        onLogin(user);
-      } else if (googleEmail) {
-        setError('Please enter a valid Google email address');
+      if (result.success && result.user) {
+        onLogin(result.user);
+      } else {
+        const errorMsg = result.error || (isLoginMode ? 'Login failed' : 'Registration failed');
+        setError(errorMsg);
+
+        // Auto-switch to Sign Up if user not found (Reuse smart logic)
+        if (isLoginMode && errorMsg.includes('Sign Up first')) {
+          setTimeout(() => {
+            toggleMode();
+          }, 1500);
+        }
       }
     } catch (err) {
       console.error('Google login error:', err);
-      setError('Failed to sign in with Google. Please try again.');
+      setError('Failed to sign in. Please try again.');
     } finally {
       setIsGoogleLoading(false);
     }
@@ -144,7 +168,17 @@ const LoginPage: React.FC<LoginPageProps> = ({
       if (result.success && result.user) {
         onLogin(result.user);
       } else {
-        setError(result.error || (isLoginMode ? 'Login failed' : 'Registration failed'));
+        const errorMsg = result.error || (isLoginMode ? 'Login failed' : 'Registration failed');
+        setError(errorMsg);
+
+        // Auto-switch to Sign Up if user not found
+        if (isLoginMode && errorMsg.includes('Sign Up first')) {
+          setTimeout(() => {
+            toggleMode();
+            // Keep email filled for them
+            // setName(''); // Name will be empty, they need to fill it
+          }, 1500);
+        }
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -219,6 +253,42 @@ const LoginPage: React.FC<LoginPageProps> = ({
                 }`}>
                 {isLoginMode ? 'Sign in to book your beauty appointment' : 'Create an account to get started'}
               </p>
+            </div>
+
+            {/* Authentication Mode Tabs */}
+            <div className={`flex p-1 mb-8 rounded-xl ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isLoginMode) toggleMode();
+                }}
+                className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all duration-300 ${isLoginMode
+                  ? isDarkMode
+                    ? 'bg-amber-500 text-gray-900 shadow-lg'
+                    : 'bg-white text-gray-900 shadow-md'
+                  : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
+                    : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (isLoginMode) toggleMode();
+                }}
+                className={`flex-1 py-3 text-sm font-semibold rounded-lg transition-all duration-300 ${!isLoginMode
+                  ? isDarkMode
+                    ? 'bg-amber-500 text-gray-900 shadow-lg'
+                    : 'bg-white text-gray-900 shadow-md'
+                  : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
+                    : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Sign Up
+              </button>
             </div>
 
             {/* Error Message */}
@@ -373,19 +443,9 @@ const LoginPage: React.FC<LoginPageProps> = ({
             <div className={`mt-10 flex flex-col items-center justify-center space-y-4 text-sm transition-all duration-700 delay-800 ${animateForm ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
               }`}>
 
-              {/* Toggle Login/Register */}
-              <div className="flex items-center space-x-2">
-                <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
-                  {isLoginMode ? "Don't have an account?" : "Already have an account?"}
-                </span>
-                <button
-                  type="button"
-                  onClick={toggleMode}
-                  className={`font-bold transition-colors ${isDarkMode ? 'text-amber-400 hover:text-amber-300' : 'text-amber-600 hover:text-amber-700'
-                    }`}
-                >
-                  {isLoginMode ? 'Sign Up' : 'Sign In'}
-                </button>
+              {/* Toggle Login/Register - Removed in favor of top tabs */}
+              <div className="flex items-center space-x-2 opacity-0 pointer-events-none absolute">
+                {/* Hidden but kept in DOM to avoid layout shifts if any style depends on it, actually cleaner to remove completely but I will just comment out the visible parts or render nothing */}
               </div>
 
               {isLoginMode && (
