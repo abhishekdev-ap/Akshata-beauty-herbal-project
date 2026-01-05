@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QrCode, CreditCard, Smartphone, CheckCircle, Banknote, MapPin, Clock, AlertCircle, Phone, ArrowLeft, X, Calendar } from 'lucide-react';
+import { CheckCircle, Phone, ArrowLeft, X, Calendar } from 'lucide-react';
 import { Appointment } from '../types';
 import SMSService from '../services/smsService';
 
@@ -11,15 +11,9 @@ interface PaymentPageProps {
 }
 
 const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplete, onBack }) => {
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'cash'>('upi');
+  const [paymentMethod] = useState<'upi' | 'card' | 'cash'>('upi');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    expiry: '',
-    cvv: '',
-    name: ''
-  });
 
   const smsService = SMSService.getInstance();
 
@@ -49,15 +43,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplet
           const userEmail = Object.keys(userData)[0] || 'customer@example.com';
           const userName = userData[userEmail]?.name || 'Customer';
 
-          const paymentSMSData = {
-            customerName: userName,
-            customerEmail: userEmail,
-            services: appointment.services.map(service => service.name),
-            appointmentDate: appointment.date,
-            appointmentTime: appointment.time,
-            totalAmount: appointment.totalPrice,
-            appointmentId: appointment.id
-          };
+
 
           const paymentNotificationMessage = `💰 PAYMENT RECEIVED - AKSHATA BEAUTY HERBAL PARLOUR
 
@@ -76,7 +62,7 @@ Email: ${userEmail}
 
 - AKSHATA BEAUTY HERBAL PARLOUR System`;
 
-          await smsService.sendSMS({
+          await smsService.sendSMSWithFallback({
             to: smsService.getAkshataNumber(),
             message: paymentNotificationMessage
           });
@@ -109,37 +95,7 @@ Email: ${userEmail}
     }
   };
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
 
-  const handleCardInputChange = (field: string, value: string) => {
-    if (field === 'number') {
-      value = formatCardNumber(value);
-    } else if (field === 'expiry') {
-      value = value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').substr(0, 5);
-    } else if (field === 'cvv') {
-      value = value.replace(/\D/g, '').substr(0, 3);
-    }
-
-    setCardDetails(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const upiId = "akshata.parlor@paytm";
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
