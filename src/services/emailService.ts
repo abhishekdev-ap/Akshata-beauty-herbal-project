@@ -563,19 +563,22 @@ Message: ${data.message}`);
 
   private async sendWithWeb3Forms(emailTemplate: EmailTemplate): Promise<{ success: boolean; error?: string }> {
     try {
-      // Get API Key from Business Settings
+      // Get API Key - hardcoded Web3Forms key for reliable delivery
+      const WEB3FORMS_KEY = 'dad22b38-e415-4ac5-9b3b-3dca6bcd6825';
+
+      // Get from Business Settings or env if configured, otherwise use hardcoded key
       const businessStore = (await import('./businessStore')).default.getInstance();
       const settings = businessStore.getSettings();
-      // Priority: 1. Business Settings (UI), 2. .env VITE_WEB3FORMS_KEY, 3. .env VITE_ENVIRONMENT (legacy/user custom), 4. Fallback
       const accessKey = settings.web3FormsAccessKey ||
         import.meta.env.VITE_WEB3FORMS_KEY ||
-        import.meta.env.VITE_ENVIRONMENT ||
-        'dad22b38-e415-4ac5-9b3b-3dca6bcd6825'; // Keep fallback for now until env is confirmed working
+        WEB3FORMS_KEY;
 
-      if (!accessKey || accessKey === 'demo-key') {
+      if (!accessKey) {
         console.warn('⚠️ Web3Forms Access Key is missing. Email will not be sent.');
         return { success: false, error: 'Access Key Missing' };
       }
+
+      console.log('📧 Sending with Web3Forms...');
 
 
       const response = await fetch('https://api.web3forms.com/submit', {
