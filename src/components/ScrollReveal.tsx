@@ -60,7 +60,9 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
                 const magneticEase = Math.pow(p, 0.6); // Accelerating curve
                 const magneticY = isInView ? (1 - magneticEase) * 50 : 60;
                 const magneticScale = 0.94 + (magneticEase * 0.06);
+                const magneticBlur = (1 - p) * 2;
                 transform = `translateY(${magneticY}px) scale(${magneticScale})`;
+                filter = `blur(${magneticBlur}px)`;
                 boxShadow = isInView ? `0 ${magneticEase * 20}px ${magneticEase * 40}px rgba(236, 72, 153, ${magneticEase * 0.12})` : 'none';
                 break;
 
@@ -76,11 +78,12 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
             case 'crystalize':
                 // 💎 CRYSTALIZE - Sharp clarity emerging from softness
                 const crystalY = isInView ? (1 - p) * 30 : 40;
+                const crystalBlur = (1 - p) * 4;
                 const crystalBrightness = 0.9 + (p * 0.1);
                 const crystalContrast = 0.95 + (p * 0.05);
                 transform = `translateY(${crystalY}px)`;
-                filter = `brightness(${crystalBrightness}) contrast(${crystalContrast})`;
-                boxShadow = isInView ? `0 0 ${p * 30}px rgba(236, 72, 153, ${p * 0.15})` : 'none';
+                filter = `blur(${crystalBlur}px) brightness(${crystalBrightness}) contrast(${crystalContrast})`;
+                boxShadow = isInView ? `0 0 ${p * 30}px rgba(255, 255, 255, ${p * 0.3})` : 'none';
                 break;
 
             case 'hologram':
@@ -126,9 +129,11 @@ const ScrollReveal: React.FC<ScrollRevealProps> = ({
                 // 🌊 EMERGE - Rising from below with wave-like motion
                 const emergeY = isInView ? (1 - p) * 50 : 65;
                 const emergeScale = 0.92 + (p * 0.08);
+                const emergeClip = isInView ? 100 : 100 - (p * 100); // Clip path reveal
                 transform = `translateY(${emergeY}px) scale(${emergeScale})`;
                 boxShadow = isInView
-                    ? `0 ${p * 10}px ${p * 25}px rgba(236, 72, 153, ${p * 0.1})`
+                    ? `0 ${p * 10}px ${p * 25}px rgba(236, 72, 153, ${p * 0.1}),
+                       0 -${(1 - p) * 5}px ${(1 - p) * 15}px rgba(255, 255, 255, ${(1 - p) * 0.3})`
                     : 'none';
                 break;
 

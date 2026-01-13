@@ -198,7 +198,8 @@ export const ReplitScrollSection = ({
             style={{
                 opacity: isInView ? opacity : 0.3,
                 transform: `translateY(${translateY}px) scale(${scale})`,
-                transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
+                filter: `blur(${blur}px)`,
+                transition: 'opacity 0.4s ease-out, transform 0.4s ease-out, filter 0.4s ease-out',
             }}
         >
             {children}
