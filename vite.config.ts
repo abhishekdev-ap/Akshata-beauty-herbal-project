@@ -12,10 +12,18 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          utils: ['jspdf', 'html2canvas'],
-          icons: ['lucide-react']
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          ui: ['lucide-react'],
+          utils: ['jspdf', 'html2canvas']
         }
       }
+    },
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
+    target: 'esnext',
+    reportCompressedSize: false,
+    esbuild: {
+      drop: ['console', 'debugger'],
     }
   }
 });
