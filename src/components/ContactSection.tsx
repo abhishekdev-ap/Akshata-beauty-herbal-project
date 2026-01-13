@@ -293,23 +293,53 @@ const ContactSection = ({ isDarkMode }: ContactSectionProps) => {
                         </div>
                     </div>
 
-                    {/* Map */}
+                    {/* Map - Clickable Card */}
                     <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                        <div className={`h-full min-h-[400px] rounded-3xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                            <iframe
-                                src="https://www.openstreetmap.org/export/embed.html?bbox=74.9%2C15.35%2C75.1%2C15.55&layer=mapnik&marker=15.4589%2C75.0078"
-                                width="100%"
-                                height="100%"
-                                style={{ border: 0, minHeight: '450px' }}
-                                allowFullScreen
-                                loading="lazy"
-                                title="Akshata Beauty Parlour Location - Dharwad"
-                                className={isDarkMode ? 'grayscale invert contrast-125' : ''}
-                            />
-                        </div>
-                        <p className={`text-center mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            📍 Dharwad & Hubli, Karnataka, India
-                        </p>
+                        <a
+                            href="https://www.google.com/maps/search/Akshata+Beauty+Parlour+Dharwad+Karnataka"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`block h-full min-h-[400px] rounded-3xl overflow-hidden relative group cursor-pointer ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-pink-50 to-purple-100'}`}
+                        >
+                            {/* Map Background Pattern */}
+                            <div className="absolute inset-0 opacity-10">
+                                <div className="absolute inset-0" style={{
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${isDarkMode ? '%23ffffff' : '%23000000'}' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                                }} />
+                            </div>
+
+                            {/* Content */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                                {/* Location Pin */}
+                                <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transform group-hover:scale-110 transition-transform duration-300 ${isDarkMode ? 'bg-pink-500/20' : 'bg-pink-500/10'}`}>
+                                    <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                                        <MapPin className="w-7 h-7 text-white" />
+                                    </div>
+                                </div>
+
+                                {/* Location Text */}
+                                <h3 className={`text-2xl font-bold mb-2 text-center ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                    Our Location
+                                </h3>
+                                <p className={`text-lg mb-1 text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    Dharwad & Hubli
+                                </p>
+                                <p className={`text-sm mb-6 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Karnataka, India
+                                </p>
+
+                                {/* Open Map Button */}
+                                <div className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 transform group-hover:scale-105 transition-all duration-300 shadow-lg group-hover:shadow-xl">
+                                    <MapPin className="w-5 h-5" />
+                                    <span>Open in Google Maps</span>
+                                </div>
+
+                                {/* Decorative Elements */}
+                                <div className="absolute top-6 right-6">
+                                    <div className={`w-3 h-3 rounded-full animate-ping ${isDarkMode ? 'bg-pink-400' : 'bg-pink-500'}`} />
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
