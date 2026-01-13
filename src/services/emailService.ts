@@ -495,13 +495,29 @@ Reference ID: ${referenceId}
         replyTo: data.email
       };
 
-      // Use Web3Forms or Fallback
+      // Use Web3Forms
       const web3FormsResult = await this.sendWithWeb3Forms(emailTemplate);
       if (web3FormsResult.success) {
         return { success: true };
       }
 
-      return { success: false, error: 'Failed to send contact email' };
+      // Fallback: Open WhatsApp with message pre-filled
+      const whatsappMessage = encodeURIComponent(`New Inquiry from Website:
+      
+Name: ${data.name}
+Email: ${data.email}
+Phone: ${data.phone || 'Not provided'}
+Service: ${data.service || 'General Inquiry'}
+
+Message: ${data.message}`);
+
+      const whatsappUrl = `https://wa.me/919740303404?text=${whatsappMessage}`;
+
+      // Open WhatsApp in new tab as fallback
+      window.open(whatsappUrl, '_blank');
+
+      console.log('📱 Opened WhatsApp as fallback for contact form');
+      return { success: true };
 
     } catch (error) {
       console.error('❌ Contact email error:', error);
