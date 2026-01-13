@@ -21,14 +21,12 @@ interface HomePageProps {
 }
 
 const HomePage = ({ isDarkMode, onToggleDarkMode, onBookNow, onAdminDashboard, onLogout, isUserAdmin }: HomePageProps) => {
-    // Scroll to top when component mounts (when navigating back to home)
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
     return (
         <div className={`min-h-screen overflow-x-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
-            {/* Navigation */}
             <PremiumNavbar
                 isDarkMode={isDarkMode}
                 onToggleDarkMode={onToggleDarkMode}
@@ -38,46 +36,45 @@ const HomePage = ({ isDarkMode, onToggleDarkMode, onBookNow, onAdminDashboard, o
                 isUserAdmin={isUserAdmin}
             />
 
-            {/* Hero Section - No scroll animation needed, it's the first thing visible */}
             <HeroSection isDarkMode={isDarkMode} onBookNow={onBookNow} />
 
-            {/* Features Section - Replit-style fade with parallax feel */}
-            <ScrollReveal variant="fade" delay={0} duration={800}>
+            {/* ✨ AURORA - Color-shifting glow rise */}
+            <ScrollReveal variant="aurora" duration={700}>
                 <FeaturesSection isDarkMode={isDarkMode} />
             </ScrollReveal>
 
-            {/* About Section - Parallax scroll effect */}
-            <ScrollReveal variant="parallax" delay={100}>
+            {/* 🌀 PORTAL - 3D depth emerge */}
+            <ScrollReveal variant="portal" delay={30} duration={750}>
                 <AboutSection isDarkMode={isDarkMode} />
             </ScrollReveal>
 
-            {/* Services Showcase - Scale animation like Replit cards */}
-            <ScrollReveal variant="scale" delay={0} duration={700}>
+            {/* 🧲 MAGNETIC - Accelerating pull */}
+            <ScrollReveal variant="magnetic" duration={650}>
                 <ServicesShowcase isDarkMode={isDarkMode} onBookService={onBookNow} />
             </ScrollReveal>
 
-            {/* Stats Counter - Blur in effect for premium feel */}
-            <ScrollReveal variant="blur" delay={100} duration={900}>
+            {/* 🎯 ELASTIC - Bouncy spring */}
+            <ScrollReveal variant="elastic" delay={30} duration={700}>
                 <StatsCounter isDarkMode={isDarkMode} />
             </ScrollReveal>
 
-            {/* Gallery Section - Slide up animation */}
-            <ScrollReveal variant="slide-up" delay={0} duration={800}>
+            {/* 💎 CRYSTALIZE - Sharp clarity emerge */}
+            <ScrollReveal variant="crystalize" duration={650}>
                 <GallerySection isDarkMode={isDarkMode} />
             </ScrollReveal>
 
-            {/* Testimonials Section - Slide from right */}
-            <ScrollReveal variant="slide-right" delay={100} duration={800}>
+            {/* 🎈 LEVITATE - Floating rise */}
+            <ScrollReveal variant="levitate" delay={30} duration={700}>
                 <TestimonialsSection isDarkMode={isDarkMode} />
             </ScrollReveal>
 
-            {/* Contact Section - Fade animation */}
-            <ScrollReveal variant="fade" delay={0} duration={700}>
+            {/* 🌈 HOLOGRAM - Futuristic reveal */}
+            <ScrollReveal variant="hologram" duration={650}>
                 <ContactSection isDarkMode={isDarkMode} />
             </ScrollReveal>
 
-            {/* Footer - Slide up */}
-            <ScrollReveal variant="slide-up" delay={100} duration={600}>
+            {/* 🌊 EMERGE - Wave rise */}
+            <ScrollReveal variant="emerge" delay={30} duration={600}>
                 <FooterSection isDarkMode={isDarkMode} />
             </ScrollReveal>
         </div>

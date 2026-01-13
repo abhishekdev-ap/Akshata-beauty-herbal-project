@@ -1,8 +1,11 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
 import AuthService from './services/authService';
+import { firebaseAuthService } from './services/firebaseAuthService';
 import { isAdmin } from './config/admin';
 import { User, Appointment, Review } from './types';
 import { mockReviews } from './data/mockReviews';
+import { TenantProvider } from './contexts/TenantContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load components
 const LoginPage = lazy(() => import('./components/LoginPage'));
@@ -23,6 +26,15 @@ const AccountSettingsPage = lazy(() => import('./components/AccountSettingsPage'
 const PaymentHistoryPage = lazy(() => import('./components/PaymentHistoryPage'));
 const AdminDashboardPage = lazy(() => import('./components/AdminDashboardPage'));
 const BusinessSettingsPage = lazy(() => import('./components/BusinessSettingsPage'));
+const BusinessRegistrationPage = lazy(() => import('./components/BusinessRegistrationPage'));
+const OwnerDashboardPage = lazy(() => import('./components/OwnerDashboardPage'));
+const ServicesManagementPage = lazy(() => import('./components/ServicesManagementPage'));
+const AppointmentCalendarPage = lazy(() => import('./components/AppointmentCalendarPage'));
+const CustomerManagementPage = lazy(() => import('./components/CustomerManagementPage'));
+const PricingPage = lazy(() => import('./components/PricingPage'));
+const SubscriptionPage = lazy(() => import('./components/SubscriptionPage'));
+const SuperAdminDashboard = lazy(() => import('./components/SuperAdminDashboard'));
+const TenantManagementPage = lazy(() => import('./components/TenantManagementPage'));
 
 type AppState =
   | 'login'
@@ -41,7 +53,17 @@ type AppState =
   | 'account-settings'
   | 'payment-history'
   | 'admin-dashboard'
-  | 'business-settings';
+  | 'business-settings'
+  | 'register-business'
+  | 'owner-dashboard'
+  | 'services-management'
+  | 'appointment-calendar'
+  | 'customer-management'
+  | 'pricing'
+  | 'subscription'
+  | 'super-admin'
+  | 'tenant-management';
+
 
 function App() {
   const [currentState, setCurrentState] = useState<AppState>('login');
@@ -265,6 +287,61 @@ function App() {
     setCurrentState('home');
   };
 
+  const handleRegisterBusiness = () => {
+    setCurrentState('register-business');
+  };
+
+  const handleBusinessRegistrationComplete = () => {
+    // After registration, get the newly created user and go to owner dashboard
+    const currentUser = firebaseAuthService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setCurrentState('owner-dashboard');
+  };
+
+  const handleOwnerDashboardNavigate = (page: string) => {
+    if (page === 'services') {
+      setCurrentState('services-management');
+    } else if (page === 'settings') {
+      setCurrentState('business-settings');
+    } else if (page === 'appointments') {
+      setCurrentState('appointment-calendar');
+    } else if (page === 'customers') {
+      setCurrentState('customer-management');
+    } else if (page === 'analytics') {
+      setCurrentState('admin-dashboard');
+    } else if (page === 'pricing') {
+      setCurrentState('pricing');
+    } else if (page === 'subscription') {
+      setCurrentState('subscription');
+    } else if (page === 'super-admin') {
+      setCurrentState('super-admin');
+    } else {
+      setCurrentState('home');
+    }
+  };
+
+  const handleBackToOwnerDashboard = () => {
+    setCurrentState('owner-dashboard');
+  };
+
+  const handlePricing = () => {
+    setCurrentState('pricing');
+  };
+
+  const handleSubscription = () => {
+    setCurrentState('subscription');
+  };
+
+  const handleSuperAdmin = () => {
+    setCurrentState('super-admin');
+  };
+
+  const handleTenantManagement = () => {
+    setCurrentState('tenant-management');
+  };
+
   // Show loading screen while checking session
   if (isLoading) {
     return (
@@ -287,163 +364,233 @@ function App() {
   );
 
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      {/* Password Recovery Flow */}
-      {currentState === 'login' && (
-        <LoginPage onLogin={handleLogin} onForgotPassword={handleForgotPassword} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />
-      )}
-
-      {currentState === 'forgot-password' && (
-        <ForgotPasswordPage onBack={handleBackToLogin} onResetSent={handleResetLinkSent} isDarkMode={isDarkMode} />
-      )}
-
-      {currentState === 'reset-link-sent' && (
-        <ResetLinkSentPage
-          email={resetEmail}
-          onBack={handleBackToLogin}
-          onResendLink={handleResendResetLink}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {currentState === 'reset-password' && (
-        <ResetPasswordPage
-          email={resetEmail}
-          token={resetToken}
-          onPasswordReset={handlePasswordReset}
-          onBack={() => setCurrentState('reset-link-sent')}
-          isDarkMode={isDarkMode}
-        />
-      )}
-
-      {currentState === 'password-reset-success' && (
-        <PasswordResetSuccessPage onBackToLogin={handleBackToLogin} isDarkMode={isDarkMode} />
-      )}
-
-      {/* Main App Flow */}
-      {user && !['login', 'forgot-password', 'reset-link-sent', 'reset-password', 'password-reset-success'].includes(currentState) && (
-        <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-          {currentState !== 'home' && currentState !== 'customer-reviews' && currentState !== 'write-review' && currentState !== 'edit-review' && currentState !== 'account-settings' && currentState !== 'payment-history' && (
-            <Header
-              user={user}
-              onLogout={handleLogout}
-              onAccountSettings={handleAccountSettings}
-              onPaymentHistory={handlePaymentHistory}
-              onAdminDashboard={handleAdminDashboard}
-              isUserAdmin={isAdmin(user.email)}
+    <TenantProvider>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingFallback />}>
+          {/* Password Recovery Flow */}
+          {currentState === 'login' && (
+            <LoginPage
+              onLogin={handleLogin}
+              onForgotPassword={handleForgotPassword}
+              onRegisterBusiness={handleRegisterBusiness}
               isDarkMode={isDarkMode}
               onToggleDarkMode={toggleDarkMode}
             />
           )}
 
-          {currentState === 'home' && (
-            <HomePage
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={toggleDarkMode}
-              onBookNow={handleGoToBooking}
-              onAdminDashboard={handleAdminDashboard}
-              onLogout={handleLogout}
-              isUserAdmin={isAdmin(user.email)}
-            />
+          {currentState === 'forgot-password' && (
+            <ForgotPasswordPage onBack={handleBackToLogin} onResetSent={handleResetLinkSent} isDarkMode={isDarkMode} />
           )}
 
-          {currentState === 'booking' && (
-            <BookingPage
-              onBookingComplete={handleBookingComplete}
-              onViewReviews={handleViewReviews}
-              onGoHome={handleBackToHome}
-              userId={user.id}
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={toggleDarkMode}
-            />
-          )}
-
-          {currentState === 'payment' && currentAppointment && (
-            <PaymentPage
-              appointment={currentAppointment}
-              onPaymentComplete={handlePaymentComplete}
-              onBack={handleBackToBooking}
+          {currentState === 'reset-link-sent' && (
+            <ResetLinkSentPage
+              email={resetEmail}
+              onBack={handleBackToLogin}
+              onResendLink={handleResendResetLink}
               isDarkMode={isDarkMode}
             />
           )}
 
-          {currentState === 'review' && currentAppointment && (
-            <ReviewPage
-              appointment={currentAppointment}
-              onReviewSubmit={handleReviewSubmit}
+          {currentState === 'reset-password' && (
+            <ResetPasswordPage
+              email={resetEmail}
+              token={resetToken}
+              onPasswordReset={handlePasswordReset}
+              onBack={() => setCurrentState('reset-link-sent')}
               isDarkMode={isDarkMode}
             />
           )}
 
-          {currentState === 'thankyou' && (
-            <ThankYouPage onBackToHome={handleBackToHome} isDarkMode={isDarkMode} />
+          {currentState === 'password-reset-success' && (
+            <PasswordResetSuccessPage onBackToLogin={handleBackToLogin} isDarkMode={isDarkMode} />
           )}
 
-          {currentState === 'customer-reviews' && (
-            <CustomerReviewsPage
-              onBack={handleBackFromReviews}
-              onWriteReview={handleWriteReview}
-              onEditReview={handleEditReview}
-              currentUserId={user?.id}
-              isDarkMode={isDarkMode}
-              isAdmin={user ? isAdmin(user.email) : false}
+          {/* Main App Flow */}
+          {user && !['login', 'forgot-password', 'reset-link-sent', 'reset-password', 'password-reset-success', 'register-business'].includes(currentState) && (
+            <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              {currentState !== 'home' && currentState !== 'customer-reviews' && currentState !== 'write-review' && currentState !== 'edit-review' && currentState !== 'account-settings' && currentState !== 'payment-history' && (
+                <Header
+                  user={user}
+                  onLogout={handleLogout}
+                  onAccountSettings={handleAccountSettings}
+                  onPaymentHistory={handlePaymentHistory}
+                  onAdminDashboard={handleAdminDashboard}
+                  isUserAdmin={isAdmin(user.email)}
+                  isDarkMode={isDarkMode}
+                  onToggleDarkMode={toggleDarkMode}
+                />
+              )}
+
+              {currentState === 'home' && (
+                <HomePage
+                  isDarkMode={isDarkMode}
+                  onToggleDarkMode={toggleDarkMode}
+                  onBookNow={handleGoToBooking}
+                  onAdminDashboard={handleAdminDashboard}
+                  onLogout={handleLogout}
+                  isUserAdmin={isAdmin(user.email)}
+                />
+              )}
+
+              {currentState === 'booking' && (
+                <BookingPage
+                  onBookingComplete={handleBookingComplete}
+                  onViewReviews={handleViewReviews}
+                  onGoHome={handleBackToHome}
+                  userId={user.id}
+                  isDarkMode={isDarkMode}
+                  onToggleDarkMode={toggleDarkMode}
+                />
+              )}
+
+              {currentState === 'payment' && currentAppointment && (
+                <PaymentPage
+                  appointment={currentAppointment}
+                  onPaymentComplete={handlePaymentComplete}
+                  onBack={handleBackToBooking}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'review' && currentAppointment && (
+                <ReviewPage
+                  appointment={currentAppointment}
+                  onReviewSubmit={handleReviewSubmit}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'thankyou' && (
+                <ThankYouPage onBackToHome={handleBackToHome} isDarkMode={isDarkMode} />
+              )}
+
+              {currentState === 'customer-reviews' && (
+                <CustomerReviewsPage
+                  onBack={handleBackFromReviews}
+                  onWriteReview={handleWriteReview}
+                  onEditReview={handleEditReview}
+                  currentUserId={user?.id}
+                  isDarkMode={isDarkMode}
+                  isAdmin={user ? isAdmin(user.email) : false}
+                />
+              )}
+
+              {currentState === 'write-review' && (
+                <WriteReviewPage
+                  onBack={handleBackFromWriteReview}
+                  onReviewSubmit={handleManualReviewSubmit}
+                  userId={user?.id}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'edit-review' && editingReview && (
+                <EditReviewPage
+                  review={editingReview}
+                  onBack={handleBackFromEditReview}
+                  onReviewUpdate={handleReviewUpdate}
+                  userId={user?.id}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'account-settings' && (
+                <AccountSettingsPage
+                  user={user}
+                  onBack={handleBackFromAccountSettings}
+                  onUserUpdate={handleUserUpdate}
+                  isDarkMode={isDarkMode}
+                  onToggleDarkMode={toggleDarkMode}
+                />
+              )}
+
+              {currentState === 'payment-history' && (
+                <PaymentHistoryPage
+                  user={user}
+                  onBack={handleBackFromPaymentHistory}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'admin-dashboard' && (
+                <AdminDashboardPage
+                  onBack={handleBackFromAdminDashboard}
+                  onBusinessSettings={handleBusinessSettings}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'business-settings' && (
+                <BusinessSettingsPage
+                  onBack={handleBackFromBusinessSettings}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+
+              {currentState === 'owner-dashboard' && (
+                <OwnerDashboardPage
+                  onNavigate={handleOwnerDashboardNavigate}
+                />
+              )}
+
+              {currentState === 'services-management' && (
+                <ServicesManagementPage
+                  onBack={handleBackToOwnerDashboard}
+                />
+              )}
+
+              {currentState === 'appointment-calendar' && (
+                <AppointmentCalendarPage
+                  onBack={handleBackToOwnerDashboard}
+                />
+              )}
+
+              {currentState === 'customer-management' && (
+                <CustomerManagementPage
+                  onBack={handleBackToOwnerDashboard}
+                />
+              )}
+
+              {currentState === 'pricing' && (
+                <PricingPage
+                  onBack={handleBackToOwnerDashboard}
+                  onSubscriptionComplete={handleBackToOwnerDashboard}
+                />
+              )}
+
+              {currentState === 'subscription' && (
+                <SubscriptionPage
+                  onBack={handleBackToOwnerDashboard}
+                  onUpgrade={handlePricing}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Business Registration - Separate from main flow */}
+          {currentState === 'register-business' && (
+            <BusinessRegistrationPage
+              onRegistrationComplete={handleBusinessRegistrationComplete}
+              onSwitchToLogin={handleBackToLogin}
             />
           )}
 
-          {currentState === 'write-review' && (
-            <WriteReviewPage
-              onBack={handleBackFromWriteReview}
-              onReviewSubmit={handleManualReviewSubmit}
-              userId={user?.id}
-              isDarkMode={isDarkMode}
+          {/* Super Admin Pages */}
+          {currentState === 'super-admin' && (
+            <SuperAdminDashboard
+              onBack={handleBackToOwnerDashboard}
+              onManageTenants={handleTenantManagement}
             />
           )}
 
-          {currentState === 'edit-review' && editingReview && (
-            <EditReviewPage
-              review={editingReview}
-              onBack={handleBackFromEditReview}
-              onReviewUpdate={handleReviewUpdate}
-              userId={user?.id}
-              isDarkMode={isDarkMode}
+          {currentState === 'tenant-management' && (
+            <TenantManagementPage
+              onBack={handleSuperAdmin}
             />
           )}
-
-          {currentState === 'account-settings' && (
-            <AccountSettingsPage
-              user={user}
-              onBack={handleBackFromAccountSettings}
-              onUserUpdate={handleUserUpdate}
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={toggleDarkMode}
-            />
-          )}
-
-          {currentState === 'payment-history' && (
-            <PaymentHistoryPage
-              user={user}
-              onBack={handleBackFromPaymentHistory}
-              isDarkMode={isDarkMode}
-            />
-          )}
-
-          {currentState === 'admin-dashboard' && (
-            <AdminDashboardPage
-              onBack={handleBackFromAdminDashboard}
-              onBusinessSettings={handleBusinessSettings}
-              isDarkMode={isDarkMode}
-            />
-          )}
-
-          {currentState === 'business-settings' && (
-            <BusinessSettingsPage
-              onBack={handleBackFromBusinessSettings}
-              isDarkMode={isDarkMode}
-            />
-          )}
-        </div>
-      )}
-    </Suspense>
+        </Suspense>
+      </ErrorBoundary>
+    </TenantProvider>
   );
 }
 

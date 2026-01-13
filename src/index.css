@@ -21,6 +21,24 @@ html {
   transform: translateZ(0);
   /* Prevent content overflow during scroll */
   overflow-x: hidden;
+  /* Ultra-smooth scrolling feel */
+  scroll-padding-top: 80px;
+}
+
+/* Premium Scroll Momentum */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-timeline: --page-scroll y;
+  }
+}
+
+body {
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 body {

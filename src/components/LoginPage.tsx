@@ -6,6 +6,7 @@ import AnimatedDarkModeToggle from './AnimatedDarkModeToggle';
 interface LoginPageProps {
   onLogin: (user: any) => void;
   onForgotPassword: () => void;
+  onRegisterBusiness?: () => void;
   isDarkMode?: boolean;
   onToggleDarkMode?: () => void;
 }
@@ -29,6 +30,7 @@ declare global {
 const LoginPage: React.FC<LoginPageProps> = ({
   onLogin,
   onForgotPassword,
+  onRegisterBusiness,
   isDarkMode = false,
   onToggleDarkMode
 }) => {
@@ -461,6 +463,21 @@ const LoginPage: React.FC<LoginPageProps> = ({
                     }`}>
                     Terms & Conditions
                   </a>
+                </div>
+              )}
+
+              {/* Salon Owner Registration Link */}
+              {onRegisterBusiness && (
+                <div className="mt-4 pt-4 border-t border-dashed border-gray-300 dark:border-gray-600 w-full text-center">
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Own a salon?{' '}
+                    <button
+                      onClick={onRegisterBusiness}
+                      className={`font-semibold hover:underline ${isDarkMode ? 'text-pink-400 hover:text-pink-300' : 'text-pink-600 hover:text-pink-700'}`}
+                    >
+                      Register Your Business →
+                    </button>
+                  </p>
                 </div>
               )}
             </div>

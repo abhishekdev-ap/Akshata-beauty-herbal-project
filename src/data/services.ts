@@ -189,7 +189,7 @@ export const bridalServices: Service[] = [
     {
         id: 'simple-look',
         name: 'Simple Look Makeup',
-        price: 999,
+        price: 2999,
         duration: 60,
         category: 'bridal',
         description: 'Elegant simple makeup look'

@@ -9,17 +9,20 @@ export interface BusinessSettings {
     address: string;
     city: string;
     homeServiceEnabled: boolean;
-    homeServiceExtraCharge: number; // Extra charge for home visits
+    homeServiceExtraCharge: number;
     workingHours: {
-        start: string; // e.g., "09:00"
-        end: string;   // e.g., "18:00"
+        start: string;
+        end: string;
     };
-    workingDays: string[]; // e.g., ["Monday", "Tuesday", ...]
+    workingDays: string[];
     logoUrl?: string;
     tagline?: string;
     // Email Settings
     emailNotificationEnabled: boolean;
     web3FormsAccessKey?: string;
+    // UPI Payment Settings
+    upiId?: string; // e.g., "akshata@okaxis" or "9740303404@ybl"
+    upiPaymentEnabled: boolean;
 }
 
 const DEFAULT_SETTINGS: BusinessSettings = {
@@ -31,7 +34,7 @@ const DEFAULT_SETTINGS: BusinessSettings = {
     address: '',
     city: '',
     homeServiceEnabled: true,
-    homeServiceExtraCharge: 100,
+    homeServiceExtraCharge: 0,
     workingHours: {
         start: '09:00',
         end: '18:00'
@@ -39,7 +42,9 @@ const DEFAULT_SETTINGS: BusinessSettings = {
     workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     tagline: 'Beauty & Bridal Services',
     emailNotificationEnabled: true,
-    web3FormsAccessKey: ''
+    web3FormsAccessKey: '',
+    upiId: '',
+    upiPaymentEnabled: true
 };
 
 class BusinessStore {
@@ -49,6 +54,12 @@ class BusinessStore {
         // Initialize with default settings if none exist
         if (!this.hasSettings()) {
             this.saveSettings(DEFAULT_SETTINGS);
+        } else {
+            // Migration: Fix old cached homeServiceExtraCharge from 100 to 0
+            const current = this.getSettings();
+            if (current.homeServiceExtraCharge === 100) {
+                this.updateSettings({ homeServiceExtraCharge: 0 });
+            }
         }
     }
 
