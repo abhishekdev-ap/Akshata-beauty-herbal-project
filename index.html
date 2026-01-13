@@ -43,7 +43,8 @@
       height: 100%;
     }
 
-    #root {
+    /* Initial loader styles - only apply when loader exists */
+    #root:has(.initial-loader) {
       min-height: 100vh;
       display: flex;
       align-items: center;
