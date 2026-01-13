@@ -46,7 +46,18 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         }
     };
 
-
+    // Preload all videos on mount
+    useEffect(() => {
+        videoRefs.current.forEach((video, index) => {
+            if (video) {
+                video.load();
+                // Preload by playing and immediately pausing (except first video)
+                if (index !== 0) {
+                    video.pause();
+                }
+            }
+        });
+    }, []);
 
     // Play current video, pause others
     useEffect(() => {
@@ -88,9 +99,6 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Video Background */}
             <div className="absolute inset-0 w-full h-full overflow-hidden bg-black">
-                {/* Fallback Gradient (Immediate LCP) */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 z-0" />
-
                 {videoSources.map((src, index) => (
                     <video
                         key={src}
@@ -99,19 +107,14 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
                         autoPlay={index === 0}
                         muted
                         playsInline
-                        loop={false}
-                        preload={index === 0 ? "auto" : "none"} // Only preload first video
+                        preload="auto"
                         onEnded={() => handleVideoEnded(index)}
-                        onLoadedData={() => {
-                            // Smooth fade in when data is ready
-                            if (index === 0) setIsVisible(true);
-                        }}
-                        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${currentVideoIndex === index ? 'opacity-100' : 'opacity-0'
-                            }`}
+                        className="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500"
                         style={{
                             minHeight: '100vh',
                             minWidth: '100vw',
-                            zIndex: 1
+                            opacity: currentVideoIndex === index ? 1 : 0,
+                            zIndex: currentVideoIndex === index ? 1 : 0
                         }}
                     />
                 ))}
