@@ -296,7 +296,7 @@ const ContactSection = ({ isDarkMode }: ContactSectionProps) => {
                     {/* Map - Clickable Card */}
                     <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
                         <a
-                            href="https://www.google.com/maps/search/Akshata+Beauty+Parlour+Dharwad+Karnataka"
+                            href="https://www.google.com/maps/@15.4380102,75.0121197,3a,75y,304.73h,70.24t/data=!3m7!1e1!3m5!1sEos4yeuYyspJmSEwGghHOg!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D19.760229609652043%26panoid%3DEos4yeuYyspJmSEwGghHOg%26yaw%3D304.72572520721843!7i13312!8i6656?entry=ttu"
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`block h-full min-h-[400px] rounded-3xl overflow-hidden relative group cursor-pointer ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-pink-50 to-purple-100'}`}
