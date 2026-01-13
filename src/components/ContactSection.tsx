@@ -297,7 +297,7 @@ const ContactSection = ({ isDarkMode }: ContactSectionProps) => {
                     <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
                         <div className={`h-full min-h-[400px] rounded-3xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d122434.96520867803!2d75.0!3d15.4!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb8d5e6e8b8b5c5%3A0x5d8c3e3c3d3d3d3d!2sDharwad%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1702123456789!5m2!1sen!2sin"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d122269.71498694756!2d75.00865548095702!3d15.458488928712956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb8cd5e3f24481f%3A0x1d3f3b1e3a51e!2sDharwad%2C%20Karnataka%2C%20India!5e0!3m2!1sen!2sus!4v1705156800000!5m2!1sen!2sus"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0, minHeight: '450px' }}
@@ -305,6 +305,7 @@ const ContactSection = ({ isDarkMode }: ContactSectionProps) => {
                                 loading="lazy"
                                 referrerPolicy="no-referrer-when-downgrade"
                                 className={isDarkMode ? 'grayscale invert' : ''}
+                                title="Akshata Beauty Parlour Location"
                             />
                         </div>
                     </div>
