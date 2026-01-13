@@ -33,7 +33,7 @@ class FirebaseAuthService {
 
     constructor() {
         // Listen to Firebase auth state changes
-        if (isFirebaseConfigured()) {
+        if (isFirebaseConfigured() && auth) {
             onAuthStateChanged(auth, async (firebaseUser) => {
                 if (firebaseUser) {
                     // User is signed in - get or create user profile
@@ -45,6 +45,7 @@ class FirebaseAuthService {
             });
         } else {
             // Fallback: Load from localStorage
+            console.log('⚠️ Firebase not configured - using localStorage fallback');
             this.loadFromLocalStorage();
         }
     }
