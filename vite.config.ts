@@ -19,11 +19,22 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 1000,
-    minify: 'esbuild',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 2
+      },
+      mangle: true,
+      format: {
+        comments: false
+      }
+    },
+    cssCodeSplit: true,
+    cssMinify: true,
     target: 'esnext',
-    reportCompressedSize: false,
-    esbuild: {
-      drop: ['console', 'debugger'],
-    }
+    reportCompressedSize: false
   }
 });
