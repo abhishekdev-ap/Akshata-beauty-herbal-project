@@ -1,32 +1,88 @@
 <!doctype html>
 <html lang="en">
 
-<meta charset="UTF-8" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AKSHATA BEAUTY HERBAL PARLOUR - Beauty & Bridal Services</title>
-<meta name="description"
-  content="Book your beauty and bridal appointments at Akshata Beauty Herbal Parlour. Professional makeup, hair styling, and complete bridal packages.">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AKSHATA BEAUTY HERBAL PARLOUR - Beauty & Bridal Services</title>
+  <meta name="description"
+    content="Book your beauty and bridal appointments at Akshata Beauty Herbal Parlour. Professional makeup, hair styling, and complete bridal packages.">
 
-<!-- Performance Optimization Hints -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="dns-prefetch" href="https://accounts.google.com">
-<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <!-- Performance Optimization Hints -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://accounts.google.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 
-<!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google Fonts - Non-blocking with font-display: swap -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet">
+  </noscript>
 
-<!-- Bootstrap Icons CDN for reliable cross-platform icon visibility -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-  media="print" onload="this.media='all'">
-<noscript>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</noscript>
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Bootstrap Icons CDN for reliable cross-platform icon visibility -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  </noscript>
 </head>
 
 <body>
-  <div id="root"></div>
+  <!-- Inline Critical CSS for instant FCP -->
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    #root {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .initial-loader {
+      text-align: center;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .initial-loader .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ec4899;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <div id="root">
+    <!-- Initial loader shown until React mounts -->
+    <div class="initial-loader">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 
