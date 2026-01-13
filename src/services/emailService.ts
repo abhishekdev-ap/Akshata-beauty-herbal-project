@@ -566,27 +566,36 @@ Reference ID: ${referenceId}
 
       console.log('📧 Sending with Web3Forms...');
 
+      // Web3Forms API - Note: 'to' is set in Web3Forms dashboard, not in API call
+      const formData = {
+        access_key: accessKey,
+        subject: emailTemplate.subject,
+        from_name: emailTemplate.replyTo ? `${emailTemplate.replyTo} via Website` : 'AKSHATA BEAUTY HERBAL PARLOUR Website',
+        email: emailTemplate.replyTo || 'noreply@akshataparlor.com', // Customer email for reply
+        name: 'Website Contact Form',
+        message: emailTemplate.text,
+      };
+
+      console.log('📤 Sending to Web3Forms:', { ...formData, access_key: '***hidden***' });
 
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key: accessKey,
-          to: emailTemplate.to,
-          // Include Reply-To if available (critical for contact forms)
-          email: emailTemplate.replyTo,
-          subject: emailTemplate.subject,
-          from_name: 'AKSHATA BEAUTY HERBAL PARLOUR Booking System',
-          message: emailTemplate.text,
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
       });
 
-      if (response.ok) {
+      const responseData = await response.json();
+      console.log('📥 Web3Forms Response:', responseData);
+
+      if (responseData.success) {
         return { success: true };
       }
-      const errorData = await response.json();
-      console.error('Web3Forms Error:', errorData);
-      return { success: false, error: errorData.message || 'Web3Forms API error' };
+
+      console.error('Web3Forms Error:', responseData);
+      return { success: false, error: responseData.message || 'Web3Forms API error' };
     } catch (error) {
       console.error('Web3Forms Catch Error:', error);
       return { success: false, error: 'Web3Forms request failed' };
