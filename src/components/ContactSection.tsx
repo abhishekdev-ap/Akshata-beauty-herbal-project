@@ -297,17 +297,19 @@ const ContactSection = ({ isDarkMode }: ContactSectionProps) => {
                     <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
                         <div className={`h-full min-h-[400px] rounded-3xl overflow-hidden ${isDarkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d122269.71498694756!2d75.00865548095702!3d15.458488928712956!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bb8cd5e3f24481f%3A0x1d3f3b1e3a51e!2sDharwad%2C%20Karnataka%2C%20India!5e0!3m2!1sen!2sus!4v1705156800000!5m2!1sen!2sus"
+                                src="https://www.openstreetmap.org/export/embed.html?bbox=74.9%2C15.35%2C75.1%2C15.55&layer=mapnik&marker=15.4589%2C75.0078"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0, minHeight: '450px' }}
                                 allowFullScreen
                                 loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                                className={isDarkMode ? 'grayscale invert' : ''}
-                                title="Akshata Beauty Parlour Location"
+                                title="Akshata Beauty Parlour Location - Dharwad"
+                                className={isDarkMode ? 'grayscale invert contrast-125' : ''}
                             />
                         </div>
+                        <p className={`text-center mt-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            📍 Dharwad & Hubli, Karnataka, India
+                        </p>
                     </div>
                 </div>
             </div>
