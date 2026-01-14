@@ -41,23 +41,32 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
     const handleVideoEnded = (index: number) => {
         if (index === currentVideoIndex) {
             const nextIndex = (currentVideoIndex + 1) % videoSources.length;
-            console.log(`Video ${index + 1} ended, switching to video ${nextIndex + 1}`);
             setCurrentVideoIndex(nextIndex);
         }
     };
 
-    // Preload next video when current is halfway through
+    // Preload and prepare next video when current is 50% through
     useEffect(() => {
         const currentVideo = videoRefs.current[currentVideoIndex];
         if (currentVideo) {
             const handleTimeUpdate = () => {
-                // When 80% through current video, start loading the next
-                if (currentVideo.currentTime > currentVideo.duration * 0.8) {
-                    const nextIndex = (currentVideoIndex + 1) % videoSources.length;
-                    const nextVideo = videoRefs.current[nextIndex];
+                const nextIndex = (currentVideoIndex + 1) % videoSources.length;
+                const nextVideo = videoRefs.current[nextIndex];
+
+                // At 50% through - start loading next video
+                if (currentVideo.duration && currentVideo.currentTime > currentVideo.duration * 0.5) {
                     if (nextVideo && nextVideo.preload === 'none') {
                         nextVideo.preload = 'auto';
                         nextVideo.load();
+                    }
+                }
+
+                // At 95% through - prepare next video for instant play
+                if (currentVideo.duration && currentVideo.currentTime > currentVideo.duration * 0.95) {
+                    if (nextVideo && nextVideo.paused) {
+                        nextVideo.currentTime = 0;
+                        // Prime the video by starting it (will be hidden by opacity)
+                        nextVideo.play().catch(() => { });
                     }
                 }
             };
@@ -66,20 +75,23 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         }
     }, [currentVideoIndex, videoSources.length]);
 
-    // Play current video, pause others
+    // Play current video, pause others (except when priming next)
     useEffect(() => {
         videoRefs.current.forEach((video, index) => {
             if (video) {
                 if (index === currentVideoIndex) {
                     video.currentTime = 0;
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(err => {
-                            console.log('Autoplay blocked:', err);
-                        });
-                    }
+                    video.play().catch(err => {
+                        console.log('Autoplay blocked:', err);
+                    });
                 } else {
-                    video.pause();
+                    // Don't immediately pause - let the transition happen smoothly
+                    setTimeout(() => {
+                        if (index !== currentVideoIndex) {
+                            video.pause();
+                            video.currentTime = 0;
+                        }
+                    }, 600); // Pause after transition completes
                 }
             }
         });
@@ -116,12 +128,13 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
                         playsInline
                         preload={index === 0 ? "auto" : "none"}
                         onEnded={() => handleVideoEnded(index)}
-                        className="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500"
+                        className="absolute top-0 left-0 w-full h-full object-cover"
                         style={{
                             minHeight: '100vh',
                             minWidth: '100vw',
                             opacity: currentVideoIndex === index ? 1 : 0,
-                            zIndex: currentVideoIndex === index ? 1 : 0
+                            transition: 'opacity 0.8s ease-in-out',
+                            zIndex: currentVideoIndex === index ? 2 : 1
                         }}
                     />
                 ))}
