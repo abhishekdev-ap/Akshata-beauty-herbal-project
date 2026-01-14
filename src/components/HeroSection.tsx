@@ -46,18 +46,25 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
         }
     };
 
-    // Preload all videos on mount
+    // Preload next video when current is halfway through
     useEffect(() => {
-        videoRefs.current.forEach((video, index) => {
-            if (video) {
-                video.load();
-                // Preload by playing and immediately pausing (except first video)
-                if (index !== 0) {
-                    video.pause();
+        const currentVideo = videoRefs.current[currentVideoIndex];
+        if (currentVideo) {
+            const handleTimeUpdate = () => {
+                // When 80% through current video, start loading the next
+                if (currentVideo.currentTime > currentVideo.duration * 0.8) {
+                    const nextIndex = (currentVideoIndex + 1) % videoSources.length;
+                    const nextVideo = videoRefs.current[nextIndex];
+                    if (nextVideo && nextVideo.preload === 'none') {
+                        nextVideo.preload = 'auto';
+                        nextVideo.load();
+                    }
                 }
-            }
-        });
-    }, []);
+            };
+            currentVideo.addEventListener('timeupdate', handleTimeUpdate);
+            return () => currentVideo.removeEventListener('timeupdate', handleTimeUpdate);
+        }
+    }, [currentVideoIndex, videoSources.length]);
 
     // Play current video, pause others
     useEffect(() => {
@@ -107,7 +114,7 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
                         autoPlay={index === 0}
                         muted
                         playsInline
-                        preload="auto"
+                        preload={index === 0 ? "auto" : "none"}
                         onEnded={() => handleVideoEnded(index)}
                         className="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500"
                         style={{
