@@ -40,6 +40,66 @@ A modern, full-stack appointment booking system designed for **Akshata Beauty He
 
 ---
 
+## 📊 Application Flowcharts
+
+### Customer Booking Flow
+```mermaid
+flowchart TD
+    A[🏠 Visit Website] --> B[📋 Browse Services]
+    B --> C{Logged In?}
+    C -->|No| D[🔐 Login/Register]
+    D --> E[📅 Select Date & Time]
+    C -->|Yes| E
+    E --> F[💳 Choose Payment]
+    F --> G{Payment Method}
+    G -->|UPI| H[📱 GPay/PhonePe]
+    G -->|Card| I[💳 Razorpay]
+    H --> J[✅ Booking Confirmed]
+    I --> J
+    J --> K[📧 Email Receipt]
+    K --> L[📄 Download PDF]
+```
+
+### Multi-Tenant Architecture
+```mermaid
+flowchart TD
+    subgraph SuperAdmin["🔑 Super Admin"]
+        SA[Manage All Tenants]
+        SA --> T1[Tenant 1: Akshata Parlour]
+        SA --> T2[Tenant 2: Other Salon]
+        SA --> T3[Tenant N: Future Business]
+    end
+    
+    subgraph Tenant["🏢 Each Tenant"]
+        O[👤 Owner] --> A1[Admin Dashboard]
+        O --> S[📋 Services]
+        O --> C[👥 Customers]
+        O --> AP[📅 Appointments]
+    end
+    
+    subgraph Customer["💅 Customer"]
+        CU[Browse] --> BK[Book]
+        BK --> PY[Pay]
+        PY --> RV[Review]
+    end
+```
+
+### Payment Processing Flow
+```mermaid
+flowchart LR
+    A[💰 Checkout] --> B{Payment Type}
+    B -->|UPI| C[📱 Deep Link]
+    C --> D[GPay/PhonePe App]
+    D --> E[✅ Success]
+    B -->|Card/Net Banking| F[Razorpay Gateway]
+    F --> G[Bank Auth]
+    G --> E
+    E --> H[📧 Confirmation Email]
+    E --> I[🗄️ Save to Firestore]
+```
+
+---
+
 ## 🏗 Tech Stack
 
 | Category | Technologies |
