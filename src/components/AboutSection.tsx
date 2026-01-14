@@ -108,15 +108,20 @@ const AboutSection = ({ isDarkMode }: AboutSectionProps) => {
                         </h2>
 
                         {/* Description */}
-                        <p className={`text-lg leading-relaxed mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            Welcome to AKSHATA BEAUTY HERBAL PARLOUR, your premier destination for beauty and bridal services.
-                            With 9+ years of experience, we have been transforming looks and boosting confidence
-                            with our exceptional services and personalized care.
+                        <p className={`text-lg leading-relaxed mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Welcome to AKSHATA BEAUTY HERBAL PARLOUR, your trusted destination for beauty and bridal services.
+                            With over 9 years of professional experience, we are dedicated to enhancing natural beauty through
+                            personalized care, expert techniques, and quality herbal products.
                         </p>
 
-                        <p className={`text-lg leading-relaxed mb-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            Our team of skilled professionals is dedicated to providing you with the latest trends,
-                            timeless techniques, and a relaxing experience that leaves you feeling beautiful inside and out.
+                        <p className={`text-lg leading-relaxed mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Independently owned and personally managed by an experienced beauty professional, every service
+                            is delivered with attention, passion, and precision. Along with beauty services, we also offer
+                            professional beauty training classes for those aspiring to build a career in the beauty industry.
+                        </p>
+
+                        <p className={`text-lg leading-relaxed mb-8 font-medium ${isDarkMode ? 'text-pink-400' : 'text-pink-600'}`}>
+                            Experience beauty, confidence, and care—all in one place.
                         </p>
 
                         {/* Features List */}
