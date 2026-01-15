@@ -12,11 +12,12 @@ const HeroSection = ({ onBookNow }: HeroSectionProps) => {
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
     const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-    // Video playlist - all 3 play in sequence, then loop
+    // Video playlist - all 4 play in sequence, then loop
     const videoSources = [
         'parlor-makeup.mp4',
         'lipstick.mp4',
-        'Bridal.mp4'
+        'Bridal.mp4',
+        'watergirl.mp4'
     ];
 
     const slides = [
