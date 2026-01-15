@@ -17,6 +17,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplet
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   const smsService = SMSService.getInstance();
@@ -292,23 +293,51 @@ Email: ${userEmail}
 
           {/* Confirm Payment Button */}
           {paymentInitiated && (
-            <button
-              onClick={handlePayment}
-              disabled={isProcessing}
-              className="w-full py-4 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg"
-            >
-              {isProcessing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Confirming Payment...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  <span>I've Completed Payment - Confirm Booking</span>
-                </>
+            <div className="space-y-4">
+              {/* Payment Confirmation Checkbox */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                <label className="flex items-start space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={paymentConfirmed}
+                    onChange={(e) => setPaymentConfirmed(e.target.checked)}
+                    className="mt-1 w-5 h-5 text-green-600 border-yellow-300 rounded focus:ring-green-500"
+                  />
+                  <span className="text-sm text-yellow-800">
+                    <strong>I confirm that I have successfully completed the payment</strong> of ₹{appointment.totalPrice.toLocaleString()} via UPI.
+                    I understand that booking without payment will be cancelled and may result in account restrictions.
+                  </span>
+                </label>
+              </div>
+
+              {/* Confirm Button - Only enabled when checkbox is checked */}
+              <button
+                onClick={handlePayment}
+                disabled={isProcessing || !paymentConfirmed}
+                className={`w-full py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg ${paymentConfirmed
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Confirming Payment...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    <span>I've Completed Payment - Confirm Booking</span>
+                  </>
+                )}
+              </button>
+
+              {!paymentConfirmed && (
+                <p className="text-center text-xs text-red-500">
+                  ⚠️ Please check the box above to confirm you completed the payment
+                </p>
               )}
-            </button>
+            </div>
           )}
 
           {!paymentInitiated && (
