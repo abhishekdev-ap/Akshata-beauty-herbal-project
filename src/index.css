@@ -41,6 +41,55 @@ body {
   perspective: 1000px;
 }
 
+/* Mobile-Specific Smooth Scrolling Enhancements */
+@media (max-width: 768px) {
+  html {
+    /* Smoother scroll on mobile */
+    scroll-behavior: smooth;
+    -webkit-scroll-behavior: smooth;
+  }
+
+  body {
+    /* Enhanced touch scrolling momentum */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    /* Prevent pull-to-refresh interference */
+    overscroll-behavior: none;
+  }
+
+  /* Smooth transitions for all elements */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Smooth scroll containers */
+  main,
+  section,
+  .scroll-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Ultra-smooth scroll for all screen sizes */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Reduce motion for accessibility but keep smooth feel */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
