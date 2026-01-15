@@ -55,6 +55,22 @@ const FeaturesSection = ({ isDarkMode }: FeaturesSectionProps) => {
             className={`py-24 relative overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-b from-white to-pink-50/30'
                 }`}
         >
+            {/* Video Background */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden">
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    style={{ minHeight: '100%', minWidth: '100%' }}
+                >
+                    <source src="/watergirl.mp4" type="video/mp4" />
+                </video>
+                {/* Dark Overlay */}
+                <div className={`absolute inset-0 ${isDarkMode ? 'bg-gray-900/85' : 'bg-white/80'}`} />
+            </div>
+
             {/* Background Decorations */}
             <div className="absolute top-0 left-0 w-64 h-64 bg-pink-200/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
@@ -93,8 +109,8 @@ const FeaturesSection = ({ isDarkMode }: FeaturesSectionProps) => {
                             style={{ transitionDelay: `${index * 150}ms` }}
                         >
                             <div className={`relative p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 ${isDarkMode
-                                    ? 'bg-gray-800 hover:bg-gray-750 border border-gray-700'
-                                    : 'bg-white hover:bg-white shadow-xl hover:shadow-2xl'
+                                ? 'bg-gray-800 hover:bg-gray-750 border border-gray-700'
+                                : 'bg-white hover:bg-white shadow-xl hover:shadow-2xl'
                                 }`}>
                                 {/* Icon */}
                                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 
@@ -113,7 +129,7 @@ const FeaturesSection = ({ isDarkMode }: FeaturesSectionProps) => {
 
                                 {/* Hover Border Effect */}
                                 <div className={`absolute inset-0 rounded-3xl border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${feature.color.includes('pink') ? 'border-pink-500' :
-                                        feature.color.includes('purple') ? 'border-purple-500' : 'border-amber-500'
+                                    feature.color.includes('purple') ? 'border-purple-500' : 'border-amber-500'
                                     }`} />
 
                                 {/* Decorative Corner */}
