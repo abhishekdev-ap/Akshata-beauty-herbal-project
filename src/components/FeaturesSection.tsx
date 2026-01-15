@@ -67,8 +67,8 @@ const FeaturesSection = ({ isDarkMode }: FeaturesSectionProps) => {
                 >
                     <source src="/watergirl.mp4" type="video/mp4" />
                 </video>
-                {/* Dark Overlay */}
-                <div className={`absolute inset-0 ${isDarkMode ? 'bg-gray-900/85' : 'bg-white/80'}`} />
+                {/* Dark Overlay - reduced opacity for video visibility */}
+                <div className={`absolute inset-0 ${isDarkMode ? 'bg-gray-900/60' : 'bg-white/50'}`} />
             </div>
 
             {/* Background Decorations */}
@@ -108,9 +108,9 @@ const FeaturesSection = ({ isDarkMode }: FeaturesSectionProps) => {
                                 }`}
                             style={{ transitionDelay: `${index * 150}ms` }}
                         >
-                            <div className={`relative p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 ${isDarkMode
-                                ? 'bg-gray-800 hover:bg-gray-750 border border-gray-700'
-                                : 'bg-white hover:bg-white shadow-xl hover:shadow-2xl'
+                            <div className={`relative p-8 rounded-3xl transition-all duration-500 hover:-translate-y-2 backdrop-blur-md ${isDarkMode
+                                ? 'bg-gray-800/50 hover:bg-gray-800/70 border border-gray-700/50'
+                                : 'bg-white/40 hover:bg-white/60 shadow-xl hover:shadow-2xl border border-white/30'
                                 }`}>
                                 {/* Icon */}
                                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 
