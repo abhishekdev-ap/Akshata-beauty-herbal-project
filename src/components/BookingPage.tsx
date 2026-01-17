@@ -49,18 +49,36 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   const homeServiceEnabled = businessStore.isHomeServiceEnabled();
   const homeServiceCharge = businessStore.getHomeServiceCharge();
 
-  // Load services from Firestore (same source as admin)
+  // Load services from Firestore (same source as admin) with fallback to static data
   useEffect(() => {
     const loadServices = async () => {
       setIsLoadingServices(true);
       try {
+        let services: Service[] = [];
+
         if (tenant?.id) {
-          // Fetch from Firestore - same source admin uses
-          const services = await firestoreService.getServices(tenant.id, true);
-          setAllServices(services);
+          // Try to fetch from Firestore - same source admin uses
+          services = await firestoreService.getServices(tenant.id, true);
         }
+
+        // If Firestore is empty or no tenant, use static fallback data
+        if (services.length === 0) {
+          // Import static services as fallback
+          const { regularServices, packageServices, bridalServices } = await import('../data/services');
+          services = [...regularServices, ...packageServices, ...bridalServices];
+          console.log('Using fallback static services data');
+        }
+
+        setAllServices(services);
       } catch (error) {
         console.error('Error loading services from Firestore:', error);
+        // Fallback to static services on error
+        try {
+          const { regularServices, packageServices, bridalServices } = await import('../data/services');
+          setAllServices([...regularServices, ...packageServices, ...bridalServices]);
+        } catch (fallbackError) {
+          console.error('Error loading fallback services:', fallbackError);
+        }
       }
       setIsLoadingServices(false);
     };
