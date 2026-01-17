@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, AlertCircle, CheckCircle, X, Scissors } from 'lucide-react';
-import AuthService from '../services/authService';
+import { firebaseAuthService } from '../services/firebaseAuthService';
 import AnimatedDarkModeToggle from './AnimatedDarkModeToggle';
 
 interface LoginPageProps {
@@ -46,7 +46,7 @@ const LoginPage: React.FC<LoginPageProps> = ({
   const [animateForm, setAnimateForm] = useState(false);
   const [name, setName] = useState('');
 
-  const authService = AuthService.getInstance();
+  // Using Firebase Auth Service for cloud-based authentication (works across devices)
 
 
 
@@ -93,10 +93,10 @@ const LoginPage: React.FC<LoginPageProps> = ({
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      let result;
-      // 3. Authenticate via Service
+      // 3. Authenticate via Firebase
+      let user;
       if (isLoginMode) {
-        result = await authService.login({ email: googleEmail, password: googlePassword });
+        user = await firebaseAuthService.signInWithEmail(googleEmail, googlePassword);
       } else {
         // Format name from email if registering
         const formattedName = googleEmail
@@ -107,25 +107,21 @@ const LoginPage: React.FC<LoginPageProps> = ({
           .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
           .join(' ') || 'User';
 
-        result = await authService.register({ email: googleEmail, password: googlePassword }, formattedName);
+        user = await firebaseAuthService.signUpWithEmail(googleEmail, googlePassword, formattedName);
       }
 
-      if (result.success && result.user) {
-        onLogin(result.user);
-      } else {
-        const errorMsg = result.error || (isLoginMode ? 'Login failed' : 'Registration failed');
-        setError(errorMsg);
-
-        // Auto-switch to Sign Up if user not found (Reuse smart logic)
-        if (isLoginMode && errorMsg.includes('Sign Up first')) {
-          setTimeout(() => {
-            toggleMode();
-          }, 1500);
-        }
-      }
-    } catch (err) {
+      onLogin(user);
+    } catch (err: any) {
       console.error('Google login error:', err);
-      setError('Failed to sign in. Please try again.');
+      const errorMsg = err.message || 'Failed to sign in. Please try again.';
+      setError(errorMsg);
+
+      // Auto-switch to Sign Up if user not found
+      if (isLoginMode && errorMsg.includes('No account found')) {
+        setTimeout(() => {
+          toggleMode();
+        }, 1500);
+      }
     } finally {
       setIsGoogleLoading(false);
     }
@@ -160,31 +156,25 @@ const LoginPage: React.FC<LoginPageProps> = ({
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      let result;
+      let user;
       if (isLoginMode) {
-        result = await authService.login({ email, password });
+        user = await firebaseAuthService.signInWithEmail(email, password);
       } else {
-        result = await authService.register({ email, password }, name);
+        user = await firebaseAuthService.signUpWithEmail(email, password, name);
       }
 
-      if (result.success && result.user) {
-        onLogin(result.user);
-      } else {
-        const errorMsg = result.error || (isLoginMode ? 'Login failed' : 'Registration failed');
-        setError(errorMsg);
-
-        // Auto-switch to Sign Up if user not found
-        if (isLoginMode && errorMsg.includes('Sign Up first')) {
-          setTimeout(() => {
-            toggleMode();
-            // Keep email filled for them
-            // setName(''); // Name will be empty, they need to fill it
-          }, 1500);
-        }
-      }
-    } catch (error) {
+      onLogin(user);
+    } catch (error: any) {
       console.error('Auth error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      const errorMsg = error.message || 'An unexpected error occurred. Please try again.';
+      setError(errorMsg);
+
+      // Auto-switch to Sign Up if user not found
+      if (isLoginMode && errorMsg.includes('No account found')) {
+        setTimeout(() => {
+          toggleMode();
+        }, 1500);
+      }
     } finally {
       setIsLoading(false);
     }
