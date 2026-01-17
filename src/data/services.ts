@@ -1,11 +1,11 @@
 import { Service } from '../types';
 
-// Regular Services - Individual Items
+// Regular Services - Individual Items with CORRECT NEW PRICES
 export const regularServices: Service[] = [
     {
         id: 'threading',
         name: 'Threading',
-        price: 50,
+        price: 399,
         duration: 15,
         category: 'regular',
         description: 'Eyebrow and facial threading'
@@ -13,7 +13,7 @@ export const regularServices: Service[] = [
     {
         id: 'detan',
         name: 'Detan',
-        price: 150,
+        price: 399,
         duration: 30,
         category: 'regular',
         description: 'Skin detan treatment'
@@ -21,7 +21,7 @@ export const regularServices: Service[] = [
     {
         id: 'cleanup',
         name: 'Clean-up',
-        price: 200,
+        price: 399,
         duration: 45,
         category: 'regular',
         description: 'Deep cleansing and cleanup'
@@ -29,7 +29,7 @@ export const regularServices: Service[] = [
     {
         id: 'haircut',
         name: 'Haircut',
-        price: 200,
+        price: 499,
         duration: 30,
         category: 'regular',
         description: 'Professional haircut'
@@ -37,7 +37,7 @@ export const regularServices: Service[] = [
     {
         id: 'head-massage',
         name: 'Head Massage',
-        price: 150,
+        price: 499,
         duration: 30,
         category: 'regular',
         description: 'Relaxing head massage'
@@ -45,7 +45,7 @@ export const regularServices: Service[] = [
     {
         id: 'bleach',
         name: 'Bleach',
-        price: 200,
+        price: 599,
         duration: 30,
         category: 'regular',
         description: 'Skin bleaching treatment'
@@ -53,7 +53,7 @@ export const regularServices: Service[] = [
     {
         id: 'hand-wax',
         name: 'Hand Wax',
-        price: 150,
+        price: 599,
         duration: 20,
         category: 'regular',
         description: 'Full hand waxing'
@@ -61,7 +61,7 @@ export const regularServices: Service[] = [
     {
         id: 'facial',
         name: 'Facial',
-        price: 300,
+        price: 599,
         duration: 60,
         category: 'regular',
         description: 'Rejuvenating facial treatment'
@@ -69,7 +69,7 @@ export const regularServices: Service[] = [
     {
         id: 'leg-wax',
         name: 'Leg Wax',
-        price: 250,
+        price: 699,
         duration: 30,
         category: 'regular',
         description: 'Full leg waxing'
@@ -77,7 +77,7 @@ export const regularServices: Service[] = [
     {
         id: 'underarms-wax',
         name: 'Underarms Wax',
-        price: 100,
+        price: 699,
         duration: 10,
         category: 'regular',
         description: 'Underarms waxing'
@@ -85,7 +85,7 @@ export const regularServices: Service[] = [
     {
         id: 'manicure',
         name: 'Manicure',
-        price: 250,
+        price: 799,
         duration: 45,
         category: 'regular',
         description: 'Complete nail care for hands'
@@ -93,7 +93,7 @@ export const regularServices: Service[] = [
     {
         id: 'pedicure',
         name: 'Pedicure',
-        price: 300,
+        price: 799,
         duration: 60,
         category: 'regular',
         description: 'Complete nail care for feet'
@@ -101,7 +101,7 @@ export const regularServices: Service[] = [
     {
         id: 'waxing',
         name: 'Full Body Waxing',
-        price: 500,
+        price: 1999,
         duration: 60,
         category: 'regular',
         description: 'Complete body waxing'
@@ -116,7 +116,7 @@ export const regularServices: Service[] = [
     },
     {
         id: 'saree-draping',
-        name: 'Saree Draping',
+        name: 'Saree Pre-pleating',
         price: 299,
         duration: 30,
         category: 'regular',
@@ -124,11 +124,11 @@ export const regularServices: Service[] = [
     }
 ];
 
-// Package Services (combo offers) - Based on your price list
+// Package Services (combo offers) - 3 Month Package Offers
 export const packageServices: Service[] = [
     {
         id: 'basic-package-399',
-        name: 'Basic Glow Package',
+        name: '₹399 Package',
         price: 399,
         duration: 60,
         category: 'regular',
@@ -136,7 +136,7 @@ export const packageServices: Service[] = [
     },
     {
         id: 'haircare-package-499',
-        name: 'Hair Care Package',
+        name: '₹499 Package',
         price: 499,
         duration: 75,
         category: 'regular',
@@ -144,7 +144,7 @@ export const packageServices: Service[] = [
     },
     {
         id: 'glow-package-599',
-        name: 'Premium Glow Package',
+        name: '₹599 Package',
         price: 599,
         duration: 90,
         category: 'regular',
@@ -152,7 +152,7 @@ export const packageServices: Service[] = [
     },
     {
         id: 'waxing-package-699',
-        name: 'Full Waxing Package',
+        name: '₹699 Package',
         price: 699,
         duration: 60,
         category: 'regular',
@@ -160,7 +160,7 @@ export const packageServices: Service[] = [
     },
     {
         id: 'nail-package-799',
-        name: 'Complete Nail Care Package',
+        name: '₹799 Package',
         price: 799,
         duration: 120,
         category: 'regular',
@@ -168,7 +168,7 @@ export const packageServices: Service[] = [
     },
     {
         id: 'beauty-package-899',
-        name: 'Complete Beauty Package',
+        name: '₹899 Package',
         price: 899,
         duration: 120,
         category: 'regular',
@@ -176,7 +176,7 @@ export const packageServices: Service[] = [
     },
     {
         id: 'premium-package-1999',
-        name: 'Premium Beauty Package',
+        name: '₹1999 Premium Package',
         price: 1999,
         duration: 180,
         category: 'regular',
@@ -184,11 +184,11 @@ export const packageServices: Service[] = [
     }
 ];
 
-// Bridal Services - Based on your price list
+// Bridal Services - Individual Services
 export const bridalServices: Service[] = [
     {
         id: 'simple-look',
-        name: 'Simple Look Makeup',
+        name: 'Simple Looks',
         price: 999,
         duration: 60,
         category: 'bridal',
@@ -196,7 +196,7 @@ export const bridalServices: Service[] = [
     },
     {
         id: 'bridal-hairstyle',
-        name: 'Bridal Hairstyle',
+        name: 'Only Hairstyle',
         price: 300,
         duration: 45,
         category: 'bridal',
@@ -204,34 +204,18 @@ export const bridalServices: Service[] = [
     },
     {
         id: 'bridal-makeup',
-        name: 'Bridal Makeup',
+        name: 'Bridal Makeup (10% Discount)',
         price: 4999,
         duration: 120,
         category: 'bridal',
-        description: 'Complete bridal makeup (10% Discount applied)'
+        description: 'Complete bridal makeup with 10% discount'
     },
     {
         id: 'bridal-saree-draping',
-        name: 'Bridal Saree Draping',
+        name: 'Saree Pre-pleating',
         price: 299,
         duration: 30,
         category: 'bridal',
         description: 'Professional bridal saree pleating'
-    },
-    {
-        id: 'engagement-makeup',
-        name: 'Engagement Makeup',
-        price: 3999,
-        duration: 90,
-        category: 'bridal',
-        description: 'Beautiful engagement celebration look'
-    },
-    {
-        id: 'reception-makeup',
-        name: 'Reception Makeup',
-        price: 3999,
-        duration: 90,
-        category: 'bridal',
-        description: 'Elegant reception look makeup'
     }
 ];
