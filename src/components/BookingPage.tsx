@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, ShoppingBag, ArrowRight, ArrowLeft, MessageSquare, Phone, Home, MapPin, Building2 } from 'lucide-react';
 import { Service, Appointment } from '../types';
-import ServiceStore from '../services/serviceStore';
+import { firestoreService } from '../services/firestoreService';
+import { useTenant } from '../contexts/TenantContext';
 import BusinessStore from '../services/businessStore';
 import ServiceCard from './ServiceCard';
 import EmailService from '../services/emailService';
@@ -17,12 +18,8 @@ interface BookingPageProps {
 }
 
 const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewReviews, onGoHome, userId, isDarkMode = false, onToggleDarkMode }) => {
-  // ... existing state ... (skipping for brevity in replace, but need to be careful with range)
-  // I will target specific blocks to avoid huge replacement context
-
-  // ...
-
-
+  // Get tenant context for fetching services from Firestore
+  const { tenant } = useTenant();
 
   const [selectedServices, setSelectedServices] = useState<{ [key: string]: number }>({});
   const [selectedDate, setSelectedDate] = useState('');
@@ -36,6 +33,7 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   const [isTabSwitching, setIsTabSwitching] = useState(false);
   const [tabSwitchDirection, setTabSwitchDirection] = useState<'left' | 'right'>('right');
   const [allServices, setAllServices] = useState<Service[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(true);
   const [serviceLocation, setServiceLocation] = useState<'parlor' | 'home'>('parlor');
   const [customerAddress, setCustomerAddress] = useState('');
 
@@ -43,7 +41,6 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   const servicesRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  const serviceStore = ServiceStore.getInstance();
   const businessStore = BusinessStore.getInstance();
   const regularServices = allServices.filter(s => s.category === 'regular');
   const bridalServices = allServices.filter(s => s.category === 'bridal');
@@ -52,10 +49,23 @@ const BookingPage: React.FC<BookingPageProps> = ({ onBookingComplete, onViewRevi
   const homeServiceEnabled = businessStore.isHomeServiceEnabled();
   const homeServiceCharge = businessStore.getHomeServiceCharge();
 
-  // Load services from ServiceStore
+  // Load services from Firestore (same source as admin)
   useEffect(() => {
-    setAllServices(serviceStore.getServices());
-  }, []);
+    const loadServices = async () => {
+      setIsLoadingServices(true);
+      try {
+        if (tenant?.id) {
+          // Fetch from Firestore - same source admin uses
+          const services = await firestoreService.getServices(tenant.id, true);
+          setAllServices(services);
+        }
+      } catch (error) {
+        console.error('Error loading services from Firestore:', error);
+      }
+      setIsLoadingServices(false);
+    };
+    loadServices();
+  }, [tenant?.id]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
