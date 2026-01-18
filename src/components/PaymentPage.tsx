@@ -19,6 +19,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplet
   const [paymentInitiated, setPaymentInitiated] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
   const smsService = SMSService.getInstance();
   const upiService = UPIPaymentService.getInstance();
@@ -132,7 +133,12 @@ Email: ${userEmail}
       }
 
       setIsProcessing(false);
-      onPaymentComplete();
+      // Show success animation before completing
+      setShowPaymentSuccess(true);
+      // Wait for animation to complete, then redirect
+      setTimeout(() => {
+        onPaymentComplete();
+      }, 2500);
     } catch (error) {
       console.error('Payment processing error:', error);
       setIsProcessing(false);
@@ -154,6 +160,65 @@ Email: ${userEmail}
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Payment Success Overlay with Animation */}
+      {showPaymentSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-8 sm:p-12 text-center max-w-md mx-4 shadow-2xl animate-[scaleIn_0.5s_ease-out]">
+            {/* Animated Checkmark Circle */}
+            <div className="relative w-32 h-32 mx-auto mb-6">
+              {/* Outer ring animation */}
+              <div className="absolute inset-0 rounded-full border-4 border-green-200 animate-[ping_1s_ease-out]"></div>
+              {/* Green circle */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center animate-[scaleIn_0.3s_ease-out]">
+                {/* Checkmark SVG with draw animation */}
+                <svg className="w-16 h-16 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path
+                    d="M5 13l4 4L19 7"
+                    className="animate-[drawCheck_0.5s_ease-out_0.3s_forwards]"
+                    style={{
+                      strokeDasharray: 50,
+                      strokeDashoffset: 50,
+                    }}
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Success Text */}
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 animate-[fadeInUp_0.5s_ease-out_0.5s_forwards] opacity-0">
+              Payment Successful! 🎉
+            </h2>
+            <p className="text-gray-600 mb-4 animate-[fadeInUp_0.5s_ease-out_0.7s_forwards] opacity-0">
+              ₹{appointment.totalPrice.toLocaleString()} paid successfully
+            </p>
+            <p className="text-sm text-gray-500 animate-[fadeInUp_0.5s_ease-out_0.9s_forwards] opacity-0">
+              Redirecting to confirmation...
+            </p>
+
+            {/* Loading dots */}
+            <div className="flex justify-center space-x-2 mt-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes scaleIn {
+          0% { transform: scale(0); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes drawCheck {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes fadeInUp {
+          0% { transform: translateY(20px); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
+
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-pink-600 to-purple-600 p-4 sm:p-6 text-white">
@@ -315,8 +380,8 @@ Email: ${userEmail}
                 onClick={handlePayment}
                 disabled={isProcessing || !paymentConfirmed}
                 className={`w-full py-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg ${paymentConfirmed
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isProcessing ? (
