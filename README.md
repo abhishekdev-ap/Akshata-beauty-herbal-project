@@ -4,14 +4,18 @@ A modern, full-stack appointment booking system designed for **Akshata Beauty He
 
 **🚀 Live Demo:** [https://akshata-beauty-world.vercel.app](https://akshata-beauty-world.vercel.app)
 
+**📅 Last Updated:** January 2026
+
 ---
 
 ## ✨ Key Features
 
 ### 💳 Smart Payments
 - **Direct UPI Integration**: Pay using **Google Pay**, **PhonePe**, or any UPI app directly from mobile browser
+- **Animated Payment Success**: Beautiful green checkmark animation after payment completion
 - **Razorpay Integration**: Secure card/netbanking payments
 - **Deep Linking**: Automatically opens payment apps on mobile devices
+- **Payment Confirmation**: Secure checkbox confirmation before booking
 - **Zero-Commission UPI**: Direct bank-to-bank transfer without gateway fees
 
 ### 📍 Location & Contact
@@ -22,7 +26,8 @@ A modern, full-stack appointment booking system designed for **Akshata Beauty He
 ### 👤 Customer Experience
 - **Seamless Booking**: Intuitive flow for selecting services, dates, and time slots
 - **User Dashboard**: Manage profile, view booking history, download PDF receipts
-- **Authentication**: Firebase Auth with Google Sign-In and password reset
+- **Cross-Device Authentication**: Sign up once, login from any device via Firebase
+- **Real-time Price Sync**: Admin price updates instantly visible to all customers
 - **Dark Mode**: System-wide dark mode with premium aesthetics
 
 ### 🛠️ Owner & Admin Features
