@@ -206,7 +206,7 @@ const FooterSection = ({ isDarkMode }: FooterSectionProps) => {
             {/* Scroll to Top Button - Fixed position on desktop only */}
             <button
                 onClick={scrollToTop}
-                className="hidden sm:flex fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full items-center justify-center 
+                className="hidden sm:flex fixed bottom-24 right-6 w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full items-center justify-center 
                  shadow-lg shadow-pink-500/30 hover:shadow-xl hover:shadow-pink-500/40 transition-all duration-300 hover:-translate-y-1 z-50"
             >
                 <i className="bi bi-arrow-up" style={{ fontSize: '20px', color: 'white' }}></i>
