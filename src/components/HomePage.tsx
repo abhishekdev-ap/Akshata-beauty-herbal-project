@@ -83,8 +83,9 @@ const HomePage = ({ isDarkMode, onToggleDarkMode, onBookNow, onAdminDashboard, o
                 href="https://wa.me/919740303404?text=Hi%20Akshata%20Beauty%20Parlour!%20I%20would%20like%20to%20book%20an%20appointment."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="fixed bottom-6 right-6 z-50 group"
+                className="fixed bottom-6 right-6 z-[9999] group"
                 aria-label="Chat on WhatsApp"
+                style={{ zIndex: 9999 }}
             >
                 <div className="relative">
                     {/* Pulse animation ring */}
