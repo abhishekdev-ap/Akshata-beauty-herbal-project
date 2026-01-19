@@ -15,10 +15,12 @@ import {
   Search,
   DollarSign,
   FileText,
-  Sparkles
+  Sparkles,
+  FileDown
 } from 'lucide-react';
 import { User, PaymentHistory } from '../types';
 import PDFService from '../services/pdfService';
+import InvoiceService from '../services/invoiceService';
 
 interface PaymentHistoryPageProps {
   user: User;
@@ -48,6 +50,7 @@ const PaymentHistoryPage: React.FC<PaymentHistoryPageProps> = ({
   const [hoveredPayment, setHoveredPayment] = useState<string | null>(null);
 
   const pdfService = PDFService.getInstance();
+  const invoiceService = InvoiceService.getInstance();
 
   // Trigger animations on mount
   useEffect(() => {
@@ -532,6 +535,45 @@ const PaymentHistoryPage: React.FC<PaymentHistoryPageProps> = ({
                         title="Download Receipt"
                       >
                         <Download className="w-5 h-5" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          // Create appointment-like object from payment history
+                          const invoiceData = invoiceService.createInvoiceData(
+                            {
+                              id: payment.appointmentId,
+                              tenantId: payment.tenantId,
+                              userId: payment.userId,
+                              services: payment.services,
+                              date: payment.transactionDate,
+                              time: '10:00 AM',
+                              totalPrice: payment.amount,
+                              status: 'completed',
+                              serviceLocation: 'parlor',
+                              customerName: payment.customerName,
+                              customerEmail: payment.customerEmail,
+                              paymentMethod: payment.paymentMethod,
+                              paymentStatus: payment.paymentStatus,
+                              paymentId: payment.paymentId
+                            },
+                            {
+                              name: 'AKSHATA BEAUTY HERBAL PARLOUR',
+                              address: 'Hubli, Karnataka',
+                              phone: '+91 97403 03404',
+                              email: 'akshatapattanashetti968@gmail.com'
+                            },
+                            0
+                          );
+                          invoiceService.downloadInvoice(invoiceData);
+                        }}
+                        className={`p-2 rounded-lg transition-all duration-300 hover:scale-110 ${isDarkMode
+                          ? 'bg-purple-900/50 text-purple-300 hover:bg-purple-800'
+                          : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                          }`}
+                        title="Download Invoice"
+                      >
+                        <FileDown className="w-5 h-5" />
                       </button>
                     </div>
                   </div>

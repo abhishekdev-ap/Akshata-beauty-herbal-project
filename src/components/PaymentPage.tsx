@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CheckCircle, Phone, ArrowLeft, X, Calendar, Smartphone } from 'lucide-react';
+import { CheckCircle, Phone, ArrowLeft, X, Calendar, Smartphone, Download } from 'lucide-react';
 import { Appointment } from '../types';
 import SMSService from '../services/smsService';
 import UPIPaymentService from '../services/upiPaymentService';
 import BusinessStore from '../services/businessStore';
+import InvoiceService from '../services/invoiceService';
 
 interface PaymentPageProps {
   appointment: Appointment;
@@ -24,6 +25,7 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ appointment, onPaymentComplet
   const smsService = SMSService.getInstance();
   const upiService = UPIPaymentService.getInstance();
   const businessStore = BusinessStore.getInstance();
+  const invoiceService = InvoiceService.getInstance();
   const settings = businessStore.getSettings();
 
   // Get UPI ID from settings or use phone number
@@ -135,10 +137,10 @@ Email: ${userEmail}
       setIsProcessing(false);
       // Show success animation before completing
       setShowPaymentSuccess(true);
-      // Wait for animation to complete, then redirect
+      // Wait for animation to complete, then redirect (5 seconds to allow invoice download)
       setTimeout(() => {
         onPaymentComplete();
-      }, 2500);
+      }, 5000);
     } catch (error) {
       console.error('Payment processing error:', error);
       setIsProcessing(false);
@@ -192,8 +194,29 @@ Email: ${userEmail}
               ₹{appointment.totalPrice.toLocaleString()} paid successfully
             </p>
             <p className="text-sm text-gray-500 animate-[fadeInUp_0.5s_ease-out_0.9s_forwards] opacity-0">
-              Redirecting to confirmation...
+              Your booking is confirmed!
             </p>
+
+            {/* Download Invoice Button */}
+            <button
+              onClick={() => {
+                const invoiceData = invoiceService.createInvoiceData(
+                  appointment,
+                  {
+                    name: settings.parlorName || 'AKSHATA BEAUTY HERBAL PARLOUR',
+                    address: settings.address || 'Hubli, Karnataka',
+                    phone: settings.contactNumber || '+91 97403 03404',
+                    email: settings.email || 'akshatapattanashetti968@gmail.com'
+                  },
+                  settings.homeServiceExtraCharge || 0
+                );
+                invoiceService.downloadInvoice(invoiceData);
+              }}
+              className="mt-6 inline-flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg animate-[fadeInUp_0.5s_ease-out_1.1s_forwards] opacity-0"
+            >
+              <Download className="w-5 h-5" />
+              <span>Download Invoice</span>
+            </button>
 
             {/* Loading dots */}
             <div className="flex justify-center space-x-2 mt-4">
