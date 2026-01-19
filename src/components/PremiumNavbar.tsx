@@ -213,21 +213,22 @@ const PremiumNavbar = ({ isDarkMode, onToggleDarkMode, onBookNow, onAdminDashboa
                         <div className="lg:hidden flex items-center space-x-3">
                             {/* Dark Mode Toggle - Pill Switch Style (Mobile) */}
                             {/* Dark Mode Toggle - Pill Switch Style (Mobile) - Matched to Desktop */}
+                            {/* Dark Mode Toggle - Pill Switch Style (Mobile) - Matched to Desktop */}
                             <button
                                 onClick={onToggleDarkMode}
-                                className={`relative flex items-center w-14 h-7 rounded-full p-1 transition-all duration-300 ${isDarkMode
+                                className={`relative flex-shrink-0 flex items-center w-16 h-8 rounded-full p-1 transition-all duration-300 ${isDarkMode
                                     ? 'bg-purple-600'
                                     : 'bg-gray-300'
                                     }`}
                             >
                                 {/* Toggle Circle with Icon */}
                                 <div
-                                    className={`absolute w-5 h-5 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-300 ${isDarkMode ? 'translate-x-7' : 'translate-x-0'
+                                    className={`absolute w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center transition-transform duration-300 ${isDarkMode ? 'translate-x-8' : 'translate-x-0'
                                         }`}
                                 >
                                     {isDarkMode
-                                        ? <Moon className="w-3 h-3 text-purple-600" />
-                                        : <Sun className="w-3 h-3 text-yellow-500" />
+                                        ? <Moon className="w-4 h-4 text-purple-600" />
+                                        : <Sun className="w-4 h-4 text-yellow-500" />
                                     }
                                 </div>
                             </button>
