@@ -28,6 +28,7 @@ A modern, full-stack appointment booking system designed for **Akshata Beauty He
 - **User Dashboard**: Manage profile, view booking history, download PDF receipts
 - **Cross-Device Authentication**: Sign up once, login from any device via Firebase
 - **Real-time Price Sync**: Admin price updates instantly visible to all customers
+- **Direct WhatsApp Chat**: Instant connection via home screen button
 - **Dark Mode**: System-wide dark mode with premium aesthetics
 
 ### 🛠️ Owner & Admin Features
