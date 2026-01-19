@@ -26,6 +26,7 @@ A modern, full-stack appointment booking system designed for **Akshata Beauty He
 ### 👤 Customer Experience
 - **Seamless Booking**: Intuitive flow for selecting services, dates, and time slots
 - **User Dashboard**: Manage profile, view booking history, download PDF receipts
+- **PDF Invoice Generation**: Professional invoices downloadable after payment
 - **Cross-Device Authentication**: Sign up once, login from any device via Firebase
 - **Real-time Price Sync**: Admin price updates instantly visible to all customers
 - **Direct WhatsApp Chat**: Instant connection via home screen button
